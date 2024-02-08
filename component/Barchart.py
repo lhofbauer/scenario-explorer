@@ -7,8 +7,9 @@ from dash import html, dcc
 import json
 
 
-def WideFormBarchart(id, path, title, xaxis, cat_position):
-    df = pd.read_csv(path)
+def WideFormBarchart(id, path, title, xaxis, cat_position, scenario = None):
+    raw_df = pd.read_csv(path)
+    df = raw_df[raw_df['RUN'] == scenario] if scenario else raw_df
     categories = df.columns.to_list()[cat_position:]
     fig = px.bar(df, x = xaxis, y = categories , title = title)
     fig.layout = dict(xaxis = dict(type = "category"), barmode = 'stack')

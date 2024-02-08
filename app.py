@@ -12,26 +12,40 @@ config = {
     'scrollZoom': True
 }
 
+#EXTRACT SCENARIOS
+df = pd.read_csv('./data/plot_data_01.csv')
+scenarios = sorted(df['RUN'].unique())
+
 app.layout = html.Div([Sidebar.sidebar(),
                        Tabs.tabs([
                            Barchart.WideFormBarchart(
                                 'heat_generation_chart',
-                                '/data/plot_data_01.csv',
+                                './data/plot_data_01.csv',
                                 "Annual Heat Generation",
                                 "YEAR",
-                                2
+                                2,                                
                                 ),
-                            Barchart.WideFormBarchart(
-                                'heat_generation_chart',
-                                '/data/plot_data_01.csv',
-                                "Annual Heat Generation",
-                                "YEAR",
-                                2
-                                )]
+                            ]
                                 ),
                                 
                        ])
 
+@callback(
+    Output('figure-area', 'children'),
+    Input('scenario_dropdown', 'value'),
+)
+def update_graph(scenario):
+    figures = []
+    graph1 = Barchart.WideFormBarchart(
+                                'heat_generation_chart',
+                                './data/plot_data_01.csv',
+                                "Annual Heat Generation",
+                                "YEAR",
+                                2,   
+                                scenario = scenario                             
+                                )
+    figures.append(graph1)
+    return figures
 
 if __name__ == '__main__':
     app.run_server(host='127.0.0.1', port='8050', debug=True)

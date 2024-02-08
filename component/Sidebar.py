@@ -1,5 +1,6 @@
 from dash import Dash, html, dcc, callback, Output, Input
 import dash_bootstrap_components as dbc
+import pandas as pd
 
 # STYLE
 style_title = {'font-weight':'bold',
@@ -16,6 +17,9 @@ content_title = 'ENERGY TRANSITION'
 content_description = "The graphs show the progress of energy transition in the UK"
 content_facet_1 = 'Scenario'
 
+#EXTRACT SCENARIOS
+df = pd.read_csv('./data/plot_data_01.csv')
+scenarios = sorted(df['RUN'].unique())
 
 #LAYOUT
 def sidebar():
@@ -26,8 +30,9 @@ def sidebar():
             html.P(content_description, style = style_description),
             html.Br(),
             html.Div(content_facet_1, className = 'facet_name'),
-            dcc.Dropdown([1,2,3], 1, id = 'scenario_dropdown'),
+            dcc.Dropdown(scenarios, scenarios[0], id = 'scenario_dropdown'),
             #dbc.Nav([#dbc.NavLink("Home", href="/", active="exact"),],vertical=True,pills=True,),
         ], 
         id = 'sidebar'
     )
+
