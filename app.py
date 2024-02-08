@@ -16,14 +16,14 @@ app.layout = html.Div([Sidebar.sidebar(),
                        Tabs.tabs([
                            Barchart.WideFormBarchart(
                                 'heat_generation_chart',
-                                './raw data/data/plot_data_01.csv',
+                                '/data/plot_data_01.csv',
                                 "Annual Heat Generation",
                                 "YEAR",
                                 2
                                 ),
                             Barchart.WideFormBarchart(
                                 'heat_generation_chart',
-                                './raw data/data/plot_data_01.csv',
+                                '/data/plot_data_01.csv',
                                 "Annual Heat Generation",
                                 "YEAR",
                                 2
