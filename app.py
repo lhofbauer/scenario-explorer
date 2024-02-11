@@ -3,7 +3,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
 import json
-from component import Sidebar, Tabs, Barchart
+from component import Sidebar, Tabs, Barchart, Hexmap
 
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.FLATLY])
@@ -25,6 +25,14 @@ app.layout = html.Div([Sidebar.sidebar(),
                                 "YEAR",
                                 2,                                
                                 ),
+                           Hexmap.WideFormHexmap(
+                               "heat_generation_map",
+                               "./data/plot_data_02.csv",
+                               "Heat generation map",
+                               "Fraction supplied by technology (-)",
+                               "Air-source HP",
+                               2050,
+                               )  
                             ]
                                 ),
                                 
@@ -45,6 +53,17 @@ def update_graph(scenario):
                                 scenario = scenario                             
                                 )
     figures.append(graph1)
+    
+    graph2 = Hexmap.WideFormHexmap(
+        "heat_generation_map",
+        "./data/plot_data_02.csv",
+        "Heat generation map",
+        "Fraction supplied by technology (-)",
+        "Air-source HP",
+        2050,
+        scenario=scenario)
+    
+    figures.append(graph2)
     return figures
 
 if __name__ == '__main__':

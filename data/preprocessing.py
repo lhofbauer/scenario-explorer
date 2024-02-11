@@ -15,13 +15,12 @@ import json
 
 import pandas as pd
 import zipfile
-import frictionless as fl
 
 
 logger = logging.getLogger(__name__)
 
 
-path = "./"
+path = "../result_data/"
 
 def load_data(path, exclude=None, include=None):
     """Load and aggregate model data from zip files.
@@ -73,17 +72,15 @@ def load_data(path, exclude=None, include=None):
         run = dict()
         
         zf = zipfile.ZipFile(f)
-        pack = fl.Package(json.load(zf.open('datapackage.json')))
+        pack = json.load(zf.open('datapackage.json'))
+        run['name'] = pack["name"]
         
-        run['name'] = pack.name
-        for r in pack.resources:
-            j = json.loads(r.to_json())
-            print (type(j))
-            if exclude is not None and r.title in exclude:
+        for r in pack["resources"]:
+            if exclude is not None and r["title"] in exclude:
                 continue
-            if (include == "all") or (include !="all" and r.title in include):
-                run[r.title] = pd.read_csv(zf.open(r.path),
-                                           index_col=j['schema']['primaryKey'])
+            if (include == "all") or (include !="all" and r["title"] in include):
+                run[r["title"]] = pd.read_csv(zf.open(r["path"]),
+                                           index_col=r['schema']['primaryKey'])
 
         results.append(run)
     
@@ -319,13 +316,14 @@ if __name__ == "__main__":
     # load data
     
     data = load_data(path,include=["TotalProductionByTechnologyAnnual",
-                                   "CostTotalProcessed"])
+                                   "CostTotalProcessed",
+                                   "AnnualEmissions"])
     
     # config for data processing
     zo = ["NGBO","OIBO","ELST","ELRE","BMBO","HIUM","ASHP","AWHP","GSHP","H2BO",
           "BELO", "BEST"]
     
-    naming = pd.read_csv("./naming.csv",
+    naming = pd.read_csv("./data/naming.csv",
                          index_col=["NAME_IN_MODEL"])
     naming = naming["NAME"]
     
@@ -356,6 +354,7 @@ if __name__ == "__main__":
                              zorder=zo,
                              )
     plot_data_01 = plot_data_01.stack(0)
+    # save data
     plot_data_01.to_csv("./data/plot_data_01.csv")
     
     # Data analysis element 02 –  Heat generation hex maps
@@ -375,6 +374,7 @@ if __name__ == "__main__":
                              zorder=zo,
                              )
     plot_data_02 = plot_data_02.stack([0,1])
+    # save data
     plot_data_02.to_csv("./data/plot_data_02.csv")   
     
     
@@ -410,6 +410,7 @@ if __name__ == "__main__":
                              )
     
     plot_data_03 = plot_data_03.stack([0,1])
+    # save data
     plot_data_03.to_csv("./data/plot_data_03.csv")   
     
     # Data analysis element 04 –  Investment cost graph 
@@ -439,4 +440,80 @@ if __name__ == "__main__":
     #             "title" : "Building techs"}
     #         ]
 
+    # Data analysis element 05 –  Net zero maps
+    
+    reduction_value = 0.05
+    
+    em = data[0]["AnnualEmissions"].copy()
+    # divide by number of years in period to get average annual emissions
+    em["VALUE"] = em["VALUE"].multiply(xscale,axis=0)
+    
+    # normalize with respect to base year
+    plot_data_05 = em /em.xs(2015, level=3)
+    # process to get first year emission reduction is achieved
+    plot_data_05 = plot_data_05.loc[plot_data_05["VALUE"]<=reduction_value]
+    plot_data_05 = plot_data_05.reset_index("YEAR")
+    plot_data_05 = plot_data_05.drop("VALUE",axis=1)
+    plot_data_05 = plot_data_05.groupby(["RUN","REGION","EMISSION"]).min()
+    plot_data_05 = plot_data_05.rename(columns={"YEAR":"VALUE"})
+    
+    # save data
+    plot_data_05.to_csv("./data/plot_data_05.csv")
+    
+    
+    # Data analysis element 07 –  Local heat generation
+    
+    plot_data_07 = arrange_data(results=data,
+                             var="TotalProductionByTechnologyAnnual",
+                             x = "YEAR",
+                             xscale=xscale,
+                             filter_in={"YEAR":[2015,2022,2023,2025,2030,
+                                                2035,2040,2045,2050,2055],
+                                        "TECHNOLOGY":["DD","DNDO"]},
+                             filter_out={"TECHNOLOGY":["RAUP","WDIS"]},
+                             zgroupby=["RUN","TECHNOLOGY","REGION"],
+                             cgroupby={"TECHNOLOGY":lambda x: x[0:4],
+                                       "REGION":lambda x: x[0:9]},
+                             naming=naming,
+                             zorder=zo,
+                             )
+    plot_data_07 = plot_data_07.stack([0,2])
+    # save data
+    plot_data_07.to_csv("./data/plot_data_07.csv")
+    
+    # Data analysis element 08 –  Local cost structure graph   
+    
+    def groupby(x):
+        if ("WDIS" in x) or ("RAUP" in x):
+            n = "Building Heat Dist."
+        elif x.startswith("BE"):
+            n = "Building Heat Eff."
+        elif ("DD" in x) or ("DNDO" in x):
+            n = "Building Heat Gen."
+        elif x.startswith("DH") or ("SDIS" in x):
+            n = "DH systems"
+        elif ("TDIS" in x) or ("TTRA") in x:
+            n = "T&D (except DH)"
+        elif (("SNAT" in x) or ("SEXT" in x)) and ("BS" not in x[2:]):
+            n = "Supply"
+        else:
+            n = "Others"   
+        return n
+
+    plot_data_08 = arrange_data(results=data,
+                                var="CostTotalProcessed",
+                                x = ["YEAR"],
+                                xscale=xscale,
+                                filter_in={"YEAR":[2015,2022,2023,2025,2030,
+                                                2035,2040,2045,2050,2055]},
+                                zgroupby=["RUN","TECHNOLOGY","REGION"],
+                                cgroupby={"TECHNOLOGY":groupby,
+                                          "REGION":lambda x: x[0:9]},
+                                naming=naming,
+                                zorder=zo,
+                                )
+    
+    plot_data_08 = plot_data_08.stack([0,2])
+    # save data
+    plot_data_08.to_csv("./data/plot_data_08.csv")   
     

@@ -1,0 +1,5 @@
+python
+dash
+dash-bootstrap-components
+pandas
+geopandas
