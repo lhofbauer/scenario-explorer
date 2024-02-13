@@ -17,53 +17,62 @@ df = pd.read_csv('./data/plot_data_01.csv')
 scenarios = sorted(df['RUN'].unique())
 
 app.layout = html.Div([Sidebar.sidebar(),
-                       Tabs.tabs([
-                           Barchart.WideFormBarchart(
-                                'heat_generation_chart',
-                                './data/plot_data_01.csv',
-                                "Annual Heat Generation",
-                                "YEAR",
-                                2,                                
-                                ),
-                           Hexmap.WideFormHexmap(
-                               "heat_generation_map",
-                               "./data/plot_data_02.csv",
-                               "Heat generation map",
-                               "Fraction supplied by technology (-)",
-                               "Air-source HP",
-                               2050,
-                               )  
-                            ]
-                                ),
-                                
-                       ])
+                       Tabs.tabs([]),])
 
 @callback(
     Output('figure-area', 'children'),
     Input('scenario_dropdown', 'value'),
+    Input('tabs', 'active_tab'),
 )
-def update_graph(scenario):
+def update_graph(scenario, tab):
     figures = []
     graph1 = Barchart.WideFormBarchart(
-                                'heat_generation_chart',
-                                './data/plot_data_01.csv',
-                                "Annual Heat Generation",
-                                "YEAR",
-                                2,   
-                                scenario = scenario                             
-                                )
-    figures.append(graph1)
+            'heat_generation_chart',
+            './data/plot_data_01.csv',
+            "Annual Heat Generation",
+            "YEAR",
+            2,   
+            scenario = scenario,
+            x_label = "year",
+            y_label = "watt",
+            sex =  "Technologies"                             
+            )                             
     
     graph2 = Hexmap.WideFormHexmap(
-        "heat_generation_map",
-        "./data/plot_data_02.csv",
-        "Heat generation map",
-        "Fraction supplied by technology (-)",
-        "Air-source HP",
-        2050,
-        scenario=scenario)
+            "heat_generation_map",
+            "./data/plot_data_02.csv",
+            "Heat Generation Map",
+            "Fraction supplied by technology (-)",
+            "Air-source HP",
+            2050,
+            scenario = scenario)
     
-    figures.append(graph2)
+    graph3 = Barchart.LongFormBarchart(
+            'heat_generation_cost',
+            './data/plot_data_03.csv',
+            "Heat Generation Cost",
+            "YEAR",
+            "VALUE",
+            "TECHNOLOGY",   
+            scenario = scenario,
+            x_label = "year",
+            y_label = "cost",
+            sex = 'Technologies'                             
+            )
+
+    graph5 = Hexmap.LongFormHexmap(
+            "national_net_zero_map",
+            "./data/plot_data_05.csv",
+            "National Net-Zero Map",
+            "VALUE",
+            scenario = scenario,
+            sex = 'Year of net-zero achievement')                         
+
+    if tab == 'tab-1':
+        figures.extend([graph1, graph2, graph5])
+    else:
+        figures.extend([graph3])
+
     return figures
 
 if __name__ == '__main__':

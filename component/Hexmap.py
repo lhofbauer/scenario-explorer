@@ -51,33 +51,61 @@ geojson = mapdata.__geo_interface__
 
 
 
-
-def WideFormHexmap(id, path, title, zlabel, technology, year,  scenario = None):
+def WideFormHexmap(id, path, title, zlabel, technology, year,  scenario = None,
+                    x_label = None, y_label = None, style = None):
     raw_df = pd.read_csv(path)
-    df = raw_df[raw_df['RUN'] == scenario] if scenario else raw_df
+    df = raw_df.copy()
+    df = df[df['RUN'] == scenario] if scenario else df
     df = df[["REGION",technology]]
-    techmap = mapdata.merge(right=df,left_on=map_column, right_on='REGION',
+    techmap = mapdata.merge(right = df, left_on = map_column, right_on = 'REGION',
                             how='left')
+    print (techmap.columns)
     techmap[zlabel] = techmap[technology]
     fig = px.choropleth(techmap,
-                    geojson=geojson,
-                    locations= map_column,
-                    color=zlabel,
-                    featureidkey="properties."+map_column,
-                    projection="mercator",
+                    geojson = geojson,
+                    locations = map_column,
+                    color = zlabel,
+                    featureidkey = "properties." + map_column,
+                    projection = "mercator",
                     #color_continuous_scale="Emrld",
                     #hover_name=loc_column[:-2]+"NM",
                     #hover_data={loc_column:False},
                     )  
-    fig.update_geos(fitbounds="locations", visible=False)
-    fig.update_layout(paper_bgcolor = 'white', plot_bgcolor = 'white')
+    fig.update_geos(fitbounds = "locations", visible = False)
+    fig.update_layout(paper_bgcolor = 'white', plot_bgcolor = 'white', title = title)
     
     return html.Div(
         dcc.Graph(id = id, 
                   figure = fig, 
-                  style = {'width': '155vh',
-                           'height':'85vh'})
+                  style = {'width': '155vh', 'height':'85vh'} 
+                  if style == None else style)
     )
 
+
+def LongFormHexmap(id, path, title, zlabel, scenario = None, sex = None, 
+                   x_label = None, y_label = None, style = None):
+    raw_df = pd.read_csv(path)
+    df = raw_df.copy()
+    df = df[df['RUN'] == scenario] if scenario else df
+    # Creating a column with the given name "sex" to compensate 
+    # the malfunction of legend_title_text
+    df.rename(columns={zlabel: sex}, inplace=True)
+    fig = px.choropleth(df,
+                    geojson = geojson,
+                    locations = 'REGION',
+                    color = sex,
+                    featureidkey = "properties." + map_column,
+                    projection = "mercator",
+                    )
+    fig.update_layout(paper_bgcolor = 'white', plot_bgcolor = 'white', 
+                      title = title)
+    fig.update_geos(fitbounds = "locations", visible = False)
+    
+    return html.Div(
+        dcc.Graph(id = id, 
+                  figure = fig, 
+                  style = {'width': '155vh', 'height':'85vh'}
+                  if style == None else style)
+    )
 
 

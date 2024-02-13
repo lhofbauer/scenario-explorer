@@ -37,7 +37,7 @@ body{
   }
 
   #tabs {
-    position: fixed;
+    position: absolute;
     left:22rem; 
     top:3rem;
     background-color: #fff;  

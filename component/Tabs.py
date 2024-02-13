@@ -16,7 +16,7 @@ def tabs(figures : list):
         dbc.Tabs(
             [
                 dbc.Tab(label = "Heat Generation", 
-                        tab_id = "tab-1", 
+                        tab_id = "tab-1",
                         active_tab_style = style_active_tab,
                         active_label_style = style_active_label,
                         label_style = style_static_label),
