@@ -51,12 +51,12 @@ geojson = mapdata.__geo_interface__
 
 
 
-def WideFormHexmap(id, path, title, zlabel, technology, year,  scenario = None,
+def WideFormHexmap(id, path, title, zlabel, technology, year, scenario = None,
                     x_label = None, y_label = None, style = None):
     raw_df = pd.read_csv(path)
     df = raw_df.copy()
     df = df[df['RUN'] == scenario] if scenario else df
-    df = df[["REGION",technology]]
+    df = df[["REGION", technology]]
     techmap = mapdata.merge(right = df, left_on = map_column, right_on = 'REGION',
                             how='left')
     print (techmap.columns)
@@ -104,8 +104,9 @@ def LongFormHexmap(id, path, title, zlabel, scenario = None, sex = None,
     return html.Div(
         dcc.Graph(id = id, 
                   figure = fig, 
-                  style = {'width': '155vh', 'height':'85vh'}
-                  if style == None else style)
+                  style = {'width': '155vh', 
+                           'height':'85vh',
+                           } if style == None else style)
     )
 
 

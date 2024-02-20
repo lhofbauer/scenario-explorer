@@ -3,6 +3,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from dash import html, dcc
 import json
+from component import Pagination
 #Check Color Scheme https://plotly.com/python/discrete-color/
 
 # Change the region code to name
@@ -19,17 +20,26 @@ class WideFromBarCharts:
         self.path = path
         self.title = title
 
-    def createGraphs(self, cat_position, xaxis, division, x_label = None, 
+    def createGraphs(self, cat_position, xaxis, division, page, x_label = None, 
                     y_label = None, scenario = None, sex = None):
-        graphs = html.Div([], style = {'display':'flex', 'flex-wrap':'wrap'})
         raw_df = pd.read_csv(self.path)
         df = raw_df[raw_df['RUN'] == scenario] if scenario else raw_df
         categories = df.columns.to_list()[cat_position:]
         divisions = df[division].unique().tolist()
+
         
-        for i in divisions[0:11]:
+        graphs = html.Div([], style = {'display':'flex', 'flex-wrap':'wrap'})
+        
+        # Calculate the range for divisions based on the page parameter
+        start_index = (page - 1) * 5
+        end_index = min(page * 5, len(divisions))
+
+        # Return the number of items for pagination
+        num_items = len(divisions)
+
+        for i in divisions[start_index: end_index]:
             df_split = df[df[division] == i] 
-            if divisions.index(i) == 0:
+            if divisions.index(i) % 5 == 0:
                 fig = px.bar(df_split, x = xaxis, y = categories, 
                             color_discrete_sequence=px.colors.qualitative.Alphabet)
                 fig.layout = dict(xaxis = dict(type = "category"), barmode = 'stack', 
@@ -60,5 +70,5 @@ class WideFromBarCharts:
         
 
 
-        return graphs
+        return (graphs, num_items)
         

@@ -1,35 +1,42 @@
-from dash import Dash, html, dcc, callback, Output, Input
+from dash import Dash, html, dcc, callback, Output, Input, no_update
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
 import json
-from component import Sidebar, Tabs, Barchart, Hexmap, ClusterChart
+from component import Sidebar, Tabs, Barchart, Hexmap, ClusterChart, Pagination
 
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.FLATLY])
+app = Dash(__name__, external_stylesheets=[dbc.themes.COSMO])
 
 config = {
     'scrollZoom': True
 }
 
-#EXTRACT SCENARIOS
+# EXTRACT SCENARIOS
 df = pd.read_csv('./data/plot_data_01.csv')
 scenarios = sorted(df['RUN'].unique())
 
+# DEFINE PAGINATION
+
 app.layout = html.Div([Sidebar.sidebar(),
-                       Tabs.tabs([]),])
+                       Tabs.tabs([]),
+                       Pagination.page_RH(id = 'page_RH',
+                                       )])
 
 @callback(
     Output('figure-area', 'children'),
+    Output('page_RH', 'style'),
+    Output('page_RH', 'max_value'),
     Input('scenario_dropdown', 'value'),
     Input('tabs', 'active_tab'),
+    Input('page_RH', 'active_page'),
 )
-def update_graph(scenario, tab):
+def update_graph(scenario, tab, page):
     
     graph1 = Barchart.WideFormBarchart(
             'heat_generation_chart',
             './data/plot_data_01.csv',
-            "Annual Heat Generation",
+            "Historical Data (2015) and Prediction",
             "YEAR",
             2,   
             scenario = scenario,
@@ -41,7 +48,7 @@ def update_graph(scenario, tab):
     graph2 = Hexmap.WideFormHexmap(
             "heat_generation_map",
             "./data/plot_data_02.csv",
-            "Heat Generation Map",
+            "Year 2050 Predication by Region",
             "Fraction supplied by technology (-)",
             "Air-source HP",
             2050,
@@ -50,7 +57,7 @@ def update_graph(scenario, tab):
     graph3 = Barchart.LongFormBarchart(
             'heat_generation_cost',
             './data/plot_data_03.csv',
-            "Heat Generation Cost",
+            "Historical Data (2015) and Prediction",
             "YEAR",
             "VALUE",
             "TECHNOLOGY",   
@@ -63,31 +70,41 @@ def update_graph(scenario, tab):
     graph5 = Hexmap.LongFormHexmap(
             "national_net_zero_map",
             "./data/plot_data_05.csv",
-            "National Net-Zero Map",
+            "Predicted Year of Net-Zero Achievement",
             "VALUE",
             scenario = scenario,
-            sex = 'Year of net-zero achievement')   
+            sex = 'year')   
     
     graph7 = ClusterChart.WideFromBarCharts(
-                            'local_heat_generation_chart',
+                            'regional_heat_generation',
                             "./data/plot_data_07.csv",
-                            "Local Heat Generation Chart")
+                            "Historical Data (2015) and Prediction")
     
-    graph7_cluster = graph7.createGraphs(3, "YEAR", "REGION",
+    graph7_cluster = graph7.createGraphs(3, "YEAR", "REGION", page,
                                         x_label = "year", y_label = 'watt', 
                                         scenario = scenario, sex  = 'Technologies')
 
+    graph7, graph7_items = graph7_cluster[0], graph7_cluster[1]
 
-    # Define Tab Figure Group Here, HG = Heat generation, CI = Cost and Investment
-    figs = []
-    fig_group = {'HG' : [graph1, graph2, graph5, graph7_cluster],
-                 'CI' : [graph3]}  
-    
-    #fig_group['HG'].extend(graph7_cluster)
+    # Define Tab Figure Group Here
+    # HG = Heat generation, CI = Cost and Investment
+    # RH = Regional Heat Generation
+    fig_group = {'HG' : [graph1, graph2, graph5],
+                 'CI' : [graph3],
+                 'RH' : [graph7]}  
 
-    figs = fig_group['HG'] if tab == 'tab-1' else fig_group['CI']
+    # Define get figure function using abbreviation index
+    def getFig(tab):
+        abbre = list(fig_group.keys())
 
-    return figs
+        if tab == 'tab-3':
+            max_value = graph7_items // 5 
+            return (fig_group[abbre[2]], {'display':'flex'}, max_value)
+
+        else:
+            return (fig_group[abbre[int(tab[-1]) - 1]], no_update, no_update)
+
+    return getFig(tab)
 
 if __name__ == '__main__':
     app.run_server(host='127.0.0.1', port='8050', debug=True)

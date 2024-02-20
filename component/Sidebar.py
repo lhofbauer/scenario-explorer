@@ -14,7 +14,7 @@ style_description = {'font-family':'Roboto',
 
 #CONTENT
 content_title = 'ENERGY TRANSITION'
-content_description = "The graphs show the progress of energy transition in the UK"
+content_description = "The graphs show the national progress of energy transition in the UK"
 content_facet_1 = 'Scenario'
 
 #EXTRACT SCENARIOS
