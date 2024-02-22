@@ -16,22 +16,21 @@ config = {
 df = pd.read_csv('./data/plot_data_01.csv')
 scenarios = sorted(df['RUN'].unique())
 
-# DEFINE PAGINATION
 
+# DEFINE LAYOUT
 app.layout = html.Div([Sidebar.sidebar(),
                        Tabs.tabs([]),
-                       Pagination.page_RH(id = 'page_RH',
-                                       )])
+                      ])
 
 @callback(
     Output('figure-area', 'children'),
-    Output('page_RH', 'style'),
-    Output('page_RH', 'max_value'),
+    Output('dropdown_component', 'style'),
+    Output('figure-area','style'),
     Input('scenario_dropdown', 'value'),
     Input('tabs', 'active_tab'),
-    Input('page_RH', 'active_page'),
+    Input('area_dropdown','value'),
 )
-def update_graph(scenario, tab, page):
+def update_graph(scenario, tab, area):
     
     graph1 = Barchart.WideFormBarchart(
             'heat_generation_chart',
@@ -80,29 +79,28 @@ def update_graph(scenario, tab, page):
                             "./data/plot_data_07.csv",
                             "Historical Data (2015) and Prediction")
     
-    graph7_cluster = graph7.createGraphs(3, "YEAR", "REGION", page,
+    graph7_cluster = graph7.HeatGeneration(3, "YEAR", "REGION", area,
                                         x_label = "year", y_label = 'watt', 
                                         scenario = scenario, sex  = 'Technologies')
 
-    graph7, graph7_items = graph7_cluster[0], graph7_cluster[1]
 
     # Define Tab Figure Group Here
     # HG = Heat generation, CI = Cost and Investment
     # RH = Regional Heat Generation
     fig_group = {'HG' : [graph1, graph2, graph5],
                  'CI' : [graph3],
-                 'RH' : [graph7]}  
+                 'RH' : [graph7_cluster]}  
 
     # Define get figure function using abbreviation index
     def getFig(tab):
         abbre = list(fig_group.keys())
-
         if tab == 'tab-3':
-            max_value = graph7_items // 5 
-            return (fig_group[abbre[2]], {'display':'flex'}, max_value)
-
+            return fig_group[abbre[int(tab[-1]) - 1]], {'display':'block'}, {'background-color':'white',
+                                                                             'padding-top':'50px',
+                                                                             'position':'absolute',
+                                                                             'z-index':0}
         else:
-            return (fig_group[abbre[int(tab[-1]) - 1]], no_update, no_update)
+            return fig_group[abbre[int(tab[-1]) - 1]], {'display':'none'}, {'padding-top':'0px'}
 
     return getFig(tab)
 

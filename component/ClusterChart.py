@@ -10,9 +10,28 @@ from component import Pagination
 mapfile = "./data/uk-local-authority-districts-2023.hexjson"
 
 # load and process hexmap file
-with open(mapfile, "r", encoding="utf-8") as json_file:
+with open(mapfile, "r", encoding = "utf-8") as json_file:
     data = json.load(json_file)
-data = data["hexes"]
+mapfiledata = data["hexes"]
+
+# Define the areas and fetch the name
+areasfile = "./data/areas_codes_names.json"
+with open(areasfile, 'r', encoding = 'utf-8') as json_file:
+    data = json.load(json_file)
+
+# Swap the data structure to {name: code}
+areas_object = {v: k for k, v in data.items()}
+
+# Extract the list of areas' names
+areas_list = [name for code, name in data.items()]
+
+# {regionCode:areaCode} mapping file
+region_area_code_mapping = './data/region_area_code_mapping.json'
+with open(region_area_code_mapping, 'r', encoding = 'utf-8') as json_file:
+    data = json.load(json_file)
+
+# {region code: area code}
+region_area = data
 
 class WideFromBarCharts: 
     def __init__(self, id, path, title):
@@ -20,30 +39,28 @@ class WideFromBarCharts:
         self.path = path
         self.title = title
 
-    def createGraphs(self, cat_position, xaxis, division, page, x_label = None, 
+    def HeatGeneration(self, cat_position, xaxis, division, area, x_label = None, 
                     y_label = None, scenario = None, sex = None):
         raw_df = pd.read_csv(self.path)
         df = raw_df[raw_df['RUN'] == scenario] if scenario else raw_df
         categories = df.columns.to_list()[cat_position:]
-        divisions = df[division].unique().tolist()
+        regions_list = df[division].unique().tolist()
 
-        
+        # Filtered divisions through the given area
+        filtered_regions = [r for r in regions_list if region_area[r] == areas_object[area]]
+
         graphs = html.Div([], style = {'display':'flex', 'flex-wrap':'wrap'})
-        
-        # Calculate the range for divisions based on the page parameter
-        start_index = (page - 1) * 5
-        end_index = min(page * 5, len(divisions))
 
-        # Return the number of items for pagination
-        num_items = len(divisions)
+        counter = 0
+        for i in filtered_regions:
+            if counter == 0:
+                counter += 1
+                df_split = df[df[division] == i] 
 
-        for i in divisions[start_index: end_index]:
-            df_split = df[df[division] == i] 
-            if divisions.index(i) % 5 == 0:
                 fig = px.bar(df_split, x = xaxis, y = categories, 
                             color_discrete_sequence=px.colors.qualitative.Alphabet)
                 fig.layout = dict(xaxis = dict(type = "category"), barmode = 'stack', 
-                                title = "{} - {}".format(self.title, data[i]['n']))
+                                title = "{} - {}".format(self.title, mapfiledata[i]['n']))
                 fig.update_layout(paper_bgcolor = 'white', plot_bgcolor = 'white', 
                                 legend_title_text = sex, legend_tracegroupgap = 5)
                 fig.update_xaxes(title_text = x_label)
@@ -53,22 +70,21 @@ class WideFromBarCharts:
                                         dcc.Graph(figure = fig,
                                                 style = {'width': '155vh',
                                                         'height':'80vh'})))
-            
+        
             else: 
                 fig = px.bar(df_split, x = xaxis, y = categories,
-                             color_discrete_sequence=px.colors.qualitative.Alphabet)
+                                color_discrete_sequence=px.colors.qualitative.Alphabet)
                 fig.layout = dict(xaxis = dict(type = "category"), barmode = 'stack', 
-                                  title = data[i]['n'])
+                                    title = mapfiledata[i]['n'])
                 fig.update_layout(paper_bgcolor = 'white', plot_bgcolor = 'white', 
-                                  showlegend = False, )
+                                    showlegend = False, )
 
                 graphs.children.append(html.Div(
                                         dcc.Graph(figure = fig,
                                                 style = {'width': '77.5vh',
                                                         'height':'40vh'})))
 
-        
 
 
-        return (graphs, num_items)
+        return graphs
         

@@ -36,7 +36,7 @@ body{
     margin-bottom: 10px;
   }
 
-  #tabs {
+  tabs {
     position: absolute;
     left:22%; 
     top:3rem;
@@ -44,14 +44,15 @@ body{
     z-index: 1; 
   }
 
-  #figure-area {
-    padding-left: 22%;
-    padding-top: 5.5rem;
-  }
-
-  #page_RH {
-    padding-left: 22%;
-  }
+  #dropdown_component {
+    display: none;
+    position: absolute;
+    right: 1rem;
+    top: 3rem;
+    background-color: white;
+    width: 150vh;
+    height: 60px;
+    }
 
   #tab-1, #tab-2, #tab-3 {
     background-color: #ffffff;
