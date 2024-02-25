@@ -81,7 +81,15 @@ def load_data(path, exclude=None, include=None):
             if (include == "all") or (include !="all" and r["title"] in include):
                 run[r["title"]] = pd.read_csv(zf.open(r["path"]),
                                            index_col=r['schema']['primaryKey'])
-
+                
+                #FIXME: delete, arbitrary renaming for test purposes
+                run[r["title"]] = run[r["title"]].rename(index={'NODE_UK|LA|SO':'nz-2050_hp-00',
+                                                                'NZ_UK|LA|SO':'nz-2045_hp-00',
+                                                                'NZDH_UK|LA|SO':'nz-2040_hp-00',
+                                                                'NZHP_UK|LA|SO':'nz-2050_hp-01',
+                                                                'NZLP_UK|LA|SO':'nz-2045_hp-01',
+                                                                'NZHY_UK|LA|SO':'nz-2040_hp-01'})
+            
         results.append(run)
     
     logger.info("Loaded results")
@@ -335,7 +343,6 @@ if __name__ == "__main__":
     xscale=1/years_map.value_counts()
     xscale.index.name="YEAR"
     xscale.name="VALUE"
-    s="NZ_UK|LA|SO"
     
     
     # Data analysis element 01 –  Heat generation graph 
@@ -351,9 +358,9 @@ if __name__ == "__main__":
                              zgroupby=["RUN","TECHNOLOGY"],
                              cgroupby={"TECHNOLOGY":lambda x: x[0:4]},
                              naming=naming,
-                             zorder=zo,
+                             #zorder=zo,
                              )
-    plot_data_01 = plot_data_01.stack(0)
+    plot_data_01 = plot_data_01.stack(1)
     # save data
     plot_data_01.to_csv("./data/plot_data_01.csv")
     
@@ -371,9 +378,9 @@ if __name__ == "__main__":
                                        "REGION":lambda x: x[0:9]},
                              relative=["TECHNOLOGY"],
                              naming=naming,
-                             zorder=zo,
+                             #zorder=zo,
                              )
-    plot_data_02 = plot_data_02.stack([0,1])
+    plot_data_02 = plot_data_02.stack([1,2])
     # save data
     plot_data_02.to_csv("./data/plot_data_02.csv")   
     
@@ -406,10 +413,11 @@ if __name__ == "__main__":
                              zgroupby=["RUN","TECHNOLOGY"],
                              cgroupby={"TECHNOLOGY":groupby},
                              naming=naming,
-                             zorder=zo,
+                             #zorder=zo,
                              )
     
-    plot_data_03 = plot_data_03.stack([0,1])
+    plot_data_03 = plot_data_03.stack([0,1]).to_frame()
+    plot_data_03.columns = ["VALUE"]
     # save data
     plot_data_03.to_csv("./data/plot_data_03.csv")   
     
@@ -475,9 +483,9 @@ if __name__ == "__main__":
                              cgroupby={"TECHNOLOGY":lambda x: x[0:4],
                                        "REGION":lambda x: x[0:9]},
                              naming=naming,
-                             zorder=zo,
+                             #zorder=zo,
                              )
-    plot_data_07 = plot_data_07.stack([0,2])
+    plot_data_07 = plot_data_07.stack([1,2])
     # save data
     plot_data_07.to_csv("./data/plot_data_07.csv")
     
@@ -510,10 +518,10 @@ if __name__ == "__main__":
                                 cgroupby={"TECHNOLOGY":groupby,
                                           "REGION":lambda x: x[0:9]},
                                 naming=naming,
-                                zorder=zo,
+                                #zorder=zo,
                                 )
     
-    plot_data_08 = plot_data_08.stack([0,2])
+    plot_data_08 = plot_data_08.stack([1,2])
     # save data
     plot_data_08.to_csv("./data/plot_data_08.csv")   
     
