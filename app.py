@@ -25,6 +25,7 @@ app.layout = html.Div([Sidebar.sidebar(),
 
 # DEFINE CALLBACKS
 
+# updating levers if pre-defined scenario is chosen
 @callback(
     Output('nz_slider', 'value'),
     Output('hp_slider','value'),
@@ -36,7 +37,7 @@ def update_levers(scenario):
     levers = {l.split('-')[0]:int(l.split('-')[1]) for l in levers}
     return levers["nz"], levers["hp"]
 
-
+# updating scenario dropdown style if levers are changed
 @callback(
     Output('scenario_dropdown','style'),
     Input('nz_slider', 'value'),
@@ -51,6 +52,7 @@ def update_dropdown(nz, hp, scen):
     
     return {'background-color':'#ffffff'}
 
+# update chosen scenario if submit button is pressed
 @callback(
     Output('scenario_store', 'data'),
     Input('submit_button','n_clicks'),

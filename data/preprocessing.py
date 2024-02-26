@@ -325,7 +325,8 @@ if __name__ == "__main__":
     
     data = load_data(path,include=["TotalProductionByTechnologyAnnual",
                                    "CostTotalProcessed",
-                                   "AnnualEmissions"])
+                                   "AnnualEmissions",
+                                   "CostCapital"])
     
     # config for data processing
     zo = ["NGBO","OIBO","ELST","ELRE","BMBO","HIUM","ASHP","AWHP","GSHP","H2BO",
@@ -425,6 +426,23 @@ if __name__ == "__main__":
     # This would use the "CostCapitalProcessed" parameter and below shows the
     # filter_in and filter_out that could be used to separate the technologies in
     # the different sectors
+      
+    # def groupby(x):
+    #     if ("ASHP" in x) or ("GSHP" in x) or ("AWHP" in x):
+    #         n = "Heat pumps"
+    #     elif ("WDIS" in x) or ("RAUP" in x):
+    #         n = "Building Heat Dist."
+    #     elif x.startswith("BE"):
+    #         n = "Building Heat Eff."
+    #     elif ("OIBO" in x) or ("NGBO" in x):
+    #         n = "Fossil fuel boilers"
+    #     elif ("ELST" in x) or ("ELRE" in x):
+    #         n = "Electric heating"
+    #     elif ("HIUM" in x):
+    #         n = "Heat interface"
+    #     else:
+    #         n = "Others"   
+    #     return n
     
     # groupbyl = {"TECHNOLOGY":lambda x: x[0:6]}
     # groupbys = {"TECHNOLOGY":groupby}
@@ -447,6 +465,20 @@ if __name__ == "__main__":
     #             "fout":[],
     #             "title" : "Building techs"}
     #         ]
+
+    # d = plots[0]
+    # plot_data_4= arrange_data(results=data,
+    #                           var="CostCapital",
+    #                        x=["TECHNOLOGY"],
+    #                        xscale=xscale,
+    #                        filter_in={"TECHNOLOGY":d["fin"]},
+    #                        filter_out={"TECHNOLOGY":d["fout"]},
+    #                        zgroupby=["TECHNOLOGY"],
+    #                        cgroupby=d["gb"],
+    #                        naming = naming)
+
+
+
 
     # Data analysis element 05 –  Net zero maps
     
