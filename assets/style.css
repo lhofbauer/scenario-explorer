@@ -2,24 +2,14 @@ body{
   background-color: #f0f0f0
 }
 
-.dropdown_dark{
-    height: calc(1.5em + 0.75rem + 2px);
-    font-size: 0.9375rem;
-    font-weight: 400;
-    line-height: 1.5;
-    color: #fff;
-    background-color: #222;
-    background-clip: padding-box;
-    border: 1px solid #444;
-    border-radius: 0.25rem;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  }
 
-  .title {
+
+
+.title {
     font-size:64px
   }
 
-  #sidebar {
+#sidebar {
     position: fixed;
     top: 3rem;
     left: 1rem;
@@ -29,14 +19,58 @@ body{
     background-color: #ffffff
   }
 
-  .facet_name {
-    font-weight: 500;
-    color: gray;
+.sidebar_title  {
+    font-weight: bold;
+    color: #66c2a5;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700}
+
+.sidebar_subtitle {
+    font-family: Roboto;
     font-size: 16px;
-    margin-bottom: 10px;
+    color: #66c2a5
   }
 
-  tabs {
+.sidebar_description {
+    font-family: Roboto;
+    font-size: 14px;
+    color: #A5A5A5
+    }
+
+#scenario_dropdown {
+  margin-bottom: 50px;
+}
+
+.facet_name {
+    font-weight: 500;
+    margin-bottom: 10px;
+    font-family: Roboto;
+    font-size: 16px;
+    color: #66c2a5;
+  }
+
+.facet_item_name {
+  font-weight: 500;
+  font-family: Roboto;
+  font-size: 12px;
+  color: #A5A5A5;
+}
+
+.slider {
+  margin-bottom: 10px;
+}
+
+#submit_button {
+  background-color: white;
+  color: black;
+  font-family:Roboto;
+  font-size:14px;
+  border: 2px solid #66c2a5;
+  border-radius: 8px;
+  }
+
+tabs {
     position: absolute;
     left:22%; 
     top:3rem;
@@ -44,7 +78,8 @@ body{
     z-index: 1; 
   }
 
-  #dropdown_component {
+
+#dropdown_component {
     display: none;
     position: absolute;
     right: 1rem;
@@ -54,9 +89,42 @@ body{
     height: 60px;
     }
 
-  #tab-1, #tab-2, #tab-3 {
-    background-color: #ffffff;
-    border: 0px;
-
+#dropdown_frame {
+    display: flex;
+    position: absolute;
+    width:300px;
+    margin-top: 10px;
+    z-index: 1;
   }
 
+#area_label{
+    margin-right: 20px;
+    margin-top: 5px;
+  }
+
+#area_dropdown {
+  width: 300px;
+  }
+
+.tab {
+    background-color: #ffffff;
+    border: 0px;
+  }
+
+.tab :active {
+    border: 0px; 
+    background-color: #f0f0f0;
+  }
+
+.tab_label {
+    background-color: #f0f0f0;
+    font-weight:400;
+    color:#A5A5A5;
+  }
+
+  #tab_area {
+    width: 155vh;
+    position: absolute;
+    top: 3rem; 
+    left: 23%;
+  }

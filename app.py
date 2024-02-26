@@ -63,11 +63,27 @@ def update_scenario(count, nz, hp):
     
     return scenario
 
+@callback(
+    Output('dropdown_component', 'style'),
+    Output('figure-area','style'),
+    Input('tabs', 'active_tab'),
+)
+def update_filter_style(tab):
+    filter_active_dropdown = {'display':'block'}
+    filter_active_figures =  {'background-color':'white',
+                                'padding-top':'50px',
+                                'position':'absolute',
+                                'z-index':0}
+    filter_deactive_dropdown = {'display':'none'}
+    filter_deactive_figures =  {'padding-top':'0px'}
+
+    if tab in ['tab-3']:
+        return filter_active_dropdown, filter_active_figures
+    else:
+        return filter_deactive_dropdown, filter_deactive_figures
 
 @callback(
     Output('figure-area', 'children'),
-    Output('dropdown_component', 'style'),
-    Output('figure-area','style'),
     Input('scenario_store','data'),
     Input('tabs', 'active_tab'),
     Input('area_dropdown','value'),
@@ -144,17 +160,12 @@ def update_graphs(scenario, tab, area):
 
     # Define get figure function using abbreviation index
     def getFig(tab):
-        if tab == 'tab-3':
-            return glist, {'display':'block'}, {'background-color':'white',
-                                                'padding-top':'50px',
-                                                'position':'absolute',
-                                                'z-index':0}
+        if tab in ['tab-3']:
+            return glist
         else:
-            return glist, {'display':'none'}, {'padding-top':'0px'}
+            return glist
 
     return getFig(tab)
-
-
 
 if __name__ == '__main__':
     app.run_server(host='127.0.0.1', port='8050', debug=True)
