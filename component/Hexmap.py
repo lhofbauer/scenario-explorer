@@ -59,7 +59,6 @@ def WideFormHexmap(id, path, title, zlabel, technology, year, scenario = None,
     df = df[["REGION", technology]]
     techmap = mapdata.merge(right = df, left_on = map_column, right_on = 'REGION',
                             how='left')
-    print (techmap.columns)
     techmap[zlabel] = techmap[technology]
     fig = px.choropleth(techmap,
                     geojson = geojson,

@@ -6,7 +6,10 @@ import json
 from component import Sidebar, Tabs, Barchart, Hexmap, ClusterChart, Pagination
 
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.COSMO])
+app = Dash(__name__,
+           title='Energy transition scenario explorer',
+           update_title="Updating ...",
+           external_stylesheets=[dbc.themes.COSMO])
 
 config = {
     'scrollZoom': True
@@ -52,18 +55,39 @@ def update_dropdown(nz, hp, scen):
     
     return {'background-color':'#ffffff'}
 
-# update chosen scenario if submit button is pressed
+# update scenario list with new scenarios
 @callback(
-    Output('scenario_store', 'data'),
+    Output('chosen_scenario_dropdown', 'options'),
     Input('submit_button','n_clicks'),
+    State('chosen_scenario_dropdown', 'options'),
     State('nz_slider', 'value'),
     State('hp_slider','value'),
+    State('scenario_name_field', 'value'),
 )
-def update_scenario(count, nz, hp):
+def update_scenario_list(count, scens, nz, hp, name):
     
-    scenario = f'nz-{nz}_hp-{hp:02d}'
+    if name == '':
+        name = 'Scenario '+str(count)
+        
+    scens.append({'label': html.Span(children=[name], style={'color': '#808080', 'font-size': '14px'}),
+                             'value': f'nz-{nz}_hp-{hp:02d}'})
     
-    return scenario
+    return scens
+
+# update chosen scenarios if dropdown changed
+@callback(
+    Output('scenario_store', 'data'),
+    Input('chosen_scenario_dropdown','value'),
+)
+def update_scenario(scens):
+    
+    # FIXME: currently just taking the first scenario, to be updated
+    if isinstance(scens,str):
+        scenarios = scens
+    else:
+        scenarios = scens[0]
+    
+    return scenarios
 
 @callback(
     Output('dropdown_component', 'style'),

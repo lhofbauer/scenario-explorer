@@ -5,8 +5,10 @@ import pandas as pd
 #CONTENT
 content_title = 'ENERGY TRANSITION'
 content_description = 'The graphs show the national progress of energy transition in the UK'
-content_facet_1 = 'Pre-defined Scenarios'
-content_facet_2 = 'Scenario Levers'
+content_facet_1 = 'Create Scenarios'
+dropdown_description = 'Choose a pre-defined or default scenario as starting point.'
+levers_description = 'Adjust the scenario by moving the scenario levers.'
+content_facet_2 = 'Choose Scenarios to display'
 content_lev_1 = 'Net-zero Target'
 content_lev_1_tooltip = 'This lever sets the year net-zero emissions are to be achieved in the UK.'
 content_lev_2 = 'Heat Pump Rollout'
@@ -44,21 +46,32 @@ def sidebar():
             html.P(content_description, className = 'sidebar_description'),
             html.Br(),
             html.Div(content_facet_1, className = 'facet_name'),
-            dcc.Dropdown(options, predef_scenarios[0]['value'], id = 'scenario_dropdown',
+            html.Div(dropdown_description, className = 'sidebar_description'),
+            dcc.Dropdown(options, predef_scenarios[0]['value'],
+                         id = 'scenario_dropdown',
                          clearable = False,
-                         placeholder = "Other scenario"),
-            html.Div(content_facet_2, className = 'facet_name'),
+                         placeholder = "No scenario chosen."),
+            html.Div(levers_description, className = 'sidebar_description'),
             html.Div(content_lev_1, className = 'facet_item_name',
                      title = content_lev_1_tooltip),
-            dcc.Slider(min = 2040, max = 2050, step = None, marks = lev1, value = 2050,
+            dcc.Slider(min = 2040, max = 2050, step = None, marks = lev1,
+                       value = 2050,
                        id= 'nz_slider', className = 'slider'),
             html.Div(content_lev_2, className = 'facet_item_name',
                      title = content_lev_2_tooltip),
             dcc.Slider(min = 0, max = 1, step = None, marks = lev2, value = 0,
                        id= 'hp_slider', className = 'slider'),
             html.Br(),
+            dcc.Input(id='scenario_name_field', type='text', value='',
+                      placeholder = 'Scenario name'),
             html.Button(id = 'submit_button', n_clicks = 0,
-                        children='Apply'),
+                        children='Create'),
+            html.Div(content_facet_2, className = 'facet_name'),
+            dcc.Dropdown(options, predef_scenarios[0]['value'],
+                         id = 'chosen_scenario_dropdown',
+                         clearable = True,
+                         multi=True,
+                         placeholder = "No scenario chosen."),
             # dcc.Slider(min=2040, max=2050, step=None,marks=lev1,value=2050,
             #            tooltip={'template':'Net-zero target for the UK to be achieved in {value}.',
             #                     'placement':'bottom'}),
