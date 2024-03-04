@@ -120,12 +120,13 @@ def load_data(path, exclude=None, include=None):
     return results
 
 
-def arrange_data(results, var, x, xy=False,xfilter=None, xscale=None,
+def arrange_data(results, var, xy=False,xfilter=None, xscale=None,
                  zfilter=None, zgroupby=None,cgroupby=None,
                  filter_in=None, filter_out=None,ffilter=None,fgroupby=None,
                  an_change=False,
                  cleanup=True,
-                 relative=None,zorder=None, naming=None, **kwargs):
+                 relative=None,zorder=None,reagg=None,
+                 naming=None, **kwargs):
     """ Arrange data for dashboard.
     
 
@@ -133,8 +134,6 @@ def arrange_data(results, var, x, xy=False,xfilter=None, xscale=None,
     ----------
     var : str
         Name of the result variable to be used.
-    x : str or list
-        Name of set(s) to be used as dimension of the x-axis.
     xfilter : list, optional
         List of labels for which x-axis labels are tested and excluded if 
         not present in list. The default is None.
@@ -164,6 +163,10 @@ def arrange_data(results, var, x, xy=False,xfilter=None, xscale=None,
     zorder : list, optional
         List of z-axis labels that is used to reorder (only relevant for
         appearance in some graph types). The default is None.
+    reagg : dict, optional
+        Dictionary that is used to rename index labels after groupby
+        operations and performs another groupby to aggregate.
+        The default is None.        
     naming : Series, optional
         Pandas Series that map names from the model (index) to names to 
         be used for the graph. The default is None.
@@ -193,10 +196,6 @@ def arrange_data(results, var, x, xy=False,xfilter=None, xscale=None,
     else:
         df = results[0][var].copy()
    
-    
-    # convert x to list if given as string
-    if isinstance(x,str):
-        x = [x]
         
     # choose values for specific z dimensions
     if zfilter is not None:
@@ -235,7 +234,7 @@ def arrange_data(results, var, x, xy=False,xfilter=None, xscale=None,
     
     # groupby given z dimension
     if zgroupby is not None:
-        df = df.groupby(level=list(set(zgroupby+x)), axis=0).sum()
+        df = df.groupby(level=list(set(zgroupby))).sum()
     
 
     # groupby content of level based on function or dict
@@ -251,14 +250,14 @@ def arrange_data(results, var, x, xy=False,xfilter=None, xscale=None,
             idx.insert(list(idx.columns).index(k+"_"), k, agg)
             df.index = pd.MultiIndex.from_frame(idx)
     
-        df = df.groupby([l for l in df.index.names if l[:-1] not in list(cgroupby.keys())], axis=0).sum()
+        df = df.groupby([l for l in df.index.names if l[:-1] not in list(cgroupby.keys())]).sum()
         
 
     # calculate relative values if required
     if relative is not None:
         if isinstance(relative,list):
-            df = df/df.groupby([i for i in df.index.names if i not in relative],
-                               axis=0).sum()
+            df = df/df.groupby([i for i in df.index.names if i not in relative]
+                               ).sum()
         if isinstance(relative,dict):
             df = df/df.xs([v for v in relative.values()],
                        level=[k for k in relative.keys()],
@@ -293,17 +292,19 @@ def arrange_data(results, var, x, xy=False,xfilter=None, xscale=None,
         df[df<0] = 0
         # remove any columns if all values are zero (tolerance of 10^-14)
         df = df.loc[:,df.max()>10**-20]
-    
-
-    # unstack all but x dimensions and drop top level "VALUE" column level
-    df = df.unstack([i for i in df.index.names if i not in x])
-    df.columns = df.columns.droplevel()
-         
-
+            
+    if reagg is not None:
+        df = df.rename(index=reagg)
+        df = df.groupby(df.index.names).sum()
+        
     # order z dimension entries
     if zorder is not None:
-        df = df[[c for c in zorder if c in df.columns]
-                +[c  for c in df.columns if c not in zorder]]
+        techs = df.index.get_level_values("TECHNOLOGY").unique()
+        od = ([c for c in zorder if c in techs]
+                +[c for c in techs if c not in zorder])
+        
+        df = df.reindex(level="TECHNOLOGY", labels=od)
+    
 
 
     if xy:
@@ -322,15 +323,15 @@ def arrange_data(results, var, x, xy=False,xfilter=None, xscale=None,
 if __name__ == "__main__":
     
     # load data
-    
     data = load_data(path,include=["TotalProductionByTechnologyAnnual",
                                    "CostTotalProcessed",
                                    "AnnualEmissions",
-                                   "CostCapital"])
+                                   "CostCapital",
+                                   "NewCapacity"])
     
     # config for data processing
     zo = ["NGBO","OIBO","ELST","ELRE","BMBO","HIUM","ASHP","AWHP","GSHP","H2BO",
-          "BELO", "BEST"]
+          "BELO", "BEST","BEFF"]
     
     naming = pd.read_csv("./data/naming.csv",
                          index_col=["NAME_IN_MODEL"])
@@ -345,137 +346,154 @@ if __name__ == "__main__":
     xscale.index.name="YEAR"
     xscale.name="VALUE"
     
+    tech_agg = {"BEST":"BEFF",
+                "BELO": "BEFF",
+                "BEME": "BEFF",
+                "BEHI": "BEFF",
+                "AAHP": "ASHP",
+                "AWHP": "ASHP"}
     
-    # Data analysis element 01 –  Heat generation graph 
-    #s = "NZ_UK|LA|SO"
+    # Data analysis element 01 –  Heat generation data
     plot_data_01 = arrange_data(results=data,
                              var="TotalProductionByTechnologyAnnual",
-                             x = "YEAR",
                              xscale=xscale,
                              filter_in={"YEAR":[2015,2022,2023,2025,2030,
                                                 2035,2040,2045,2050,2055],
                                         "TECHNOLOGY":["DD","DNDO"]},
                              filter_out={"TECHNOLOGY":["RAUP","WDIS"]},
-                             zgroupby=["RUN","TECHNOLOGY"],
+                             zgroupby=["YEAR","RUN","TECHNOLOGY"],
                              cgroupby={"TECHNOLOGY":lambda x: x[0:4]},
+                             reagg=tech_agg,
                              naming=naming,
-                             #zorder=zo,
+                             zorder=zo,
                              )
-    plot_data_01 = plot_data_01.stack(1)
     # save data
     plot_data_01.to_csv("./data/plot_data_01.csv")
     
-    # Data analysis element 02 –  Heat generation hex maps
+    
+    # Data analysis element 02 –  Heat generation local data (maps)
     plot_data_02 = arrange_data(results=data,
                              var="TotalProductionByTechnologyAnnual",
-                             x = "YEAR",
                              xscale=xscale,
                              filter_in={"YEAR":[2015,2022,2023,2025,2030,
                                                 2035,2040,2045,2050,2055],
                                         "TECHNOLOGY":["DD","DNDO"]},
                              filter_out={"TECHNOLOGY":["RAUP","WDIS"]},
-                             zgroupby=["RUN","REGION","TECHNOLOGY"],
+                             zgroupby=["RUN","REGION","TECHNOLOGY","YEAR"],
                              cgroupby={"TECHNOLOGY":lambda x: x[0:4],
                                        "REGION":lambda x: x[0:9]},
                              relative=["TECHNOLOGY"],
                              naming=naming,
                              #zorder=zo,
                              )
-    plot_data_02 = plot_data_02.stack([1,2])
     # save data
     plot_data_02.to_csv("./data/plot_data_02.csv")   
     
     
-    # Data analysis element 03 –  Cost structure graph   
+    # Data analysis element 03 –  Cost structure data
     
     def groupby(x):
         if ("WDIS" in x) or ("RAUP" in x):
-            n = "Building Heat Dist."
+            n = "Wet heating system"
         elif x.startswith("BE"):
-            n = "Building Heat Eff."
+            n = "Building retrofit"
         elif ("DD" in x) or ("DNDO" in x):
-            n = "Building Heat Gen."
+            n = "Building heating"
         elif x.startswith("DH") or ("SDIS" in x):
-            n = "DH systems"
-        elif ("TDIS" in x) or ("TTRA") in x:
-            n = "T&D (except DH)"
+            n = "District heat"
+        elif ("TDIS" in x) or ("TTRA" in x):
+            n = "Networks"
         elif (("SNAT" in x) or ("SEXT" in x)) and ("BS" not in x[2:]):
-            n = "Supply"
+            n = "Energy supply"
         else:
             n = "Others"   
         return n
-
+    
+    order = ["Energy supply","Networks","District heat","Building retrofit",
+             "Building heating","Wet heating system","Others"]
     plot_data_03 = arrange_data(results=data,
                              var="CostTotalProcessed",
-                             x = ["YEAR"],
                              xscale=xscale,
                              filter_in={"YEAR":[2015,2022,2023,2025,2030,
                                                 2035,2040,2045,2050,2055]},
-                             zgroupby=["RUN","TECHNOLOGY"],
+                             zgroupby=["YEAR","RUN","TECHNOLOGY"],
                              cgroupby={"TECHNOLOGY":groupby},
                              naming=naming,
-                             #zorder=zo,
+                             zorder=order,
                              )
     
-    plot_data_03 = plot_data_03.stack([0,1]).to_frame()
-    plot_data_03.columns = ["VALUE"]
+    # convert to billions
+    plot_data_03.loc[:,"VALUE"] =  plot_data_03["VALUE"]/1000
+    
     # save data
     plot_data_03.to_csv("./data/plot_data_03.csv")   
     
-    # Data analysis element 04 –  Investment cost graph 
-    # This would use the "CostCapitalProcessed" parameter and below shows the
-    # filter_in and filter_out that could be used to separate the technologies in
-    # the different sectors
-      
-    # def groupby(x):
-    #     if ("ASHP" in x) or ("GSHP" in x) or ("AWHP" in x):
-    #         n = "Heat pumps"
-    #     elif ("WDIS" in x) or ("RAUP" in x):
-    #         n = "Building Heat Dist."
-    #     elif x.startswith("BE"):
-    #         n = "Building Heat Eff."
-    #     elif ("OIBO" in x) or ("NGBO" in x):
-    #         n = "Fossil fuel boilers"
-    #     elif ("ELST" in x) or ("ELRE" in x):
-    #         n = "Electric heating"
-    #     elif ("HIUM" in x):
-    #         n = "Heat interface"
-    #     else:
-    #         n = "Others"   
-    #     return n
     
-    # groupbyl = {"TECHNOLOGY":lambda x: x[0:6]}
-    # groupbys = {"TECHNOLOGY":groupby}
+    
+    # Data analysis element 04 –  Investment cost data 
+    def groupby(x):
+        if ("ASHP" in x) or ("GSHP" in x) or ("AWHP" in x):
+            n = "Heat pumps"
+        elif ("WDIS" in x) or ("RAUP" in x):
+            n = "Wet heating system"
+        elif x.startswith("BE"):
+            n = "Building retrofit"
+        elif ("OIBO" in x) or ("NGBO" in x):
+            n = "Fossil fuel boilers"
+        elif ("ELST" in x) or ("ELRE" in x):
+            n = "Electric heating"
+        elif ("HIUM" in x):
+            n = "Heat interface"
+        else:
+            n = "Others"   
+        return n
+    
+    groupbyl = {"TECHNOLOGY":lambda x: x[0:6]}
+    groupbys = {"TECHNOLOGY":groupby}
 
     
-    # plots = [{"gb":groupbyl,
-    #           "fin":["TDIS","TTRA"],
-    #           "fout":[],
-    #           "title" :"Networks"},
-    #          {"gb":groupbyl,
-    #             "fin":["DH","SDIS"],
-    #             "fout":["DHMT"],
-    #             "title" : "District heating"},
-    #          {"gb":groupbyl,
-    #         "fin":["HPSNAT"],
-    #         "fout":[],
-    #         "title" :"H2 production"},
-    #          {"gb":groupbys,
-    #             "fin":["DD","DNDO"],
-    #             "fout":[],
-    #             "title" : "Building techs"}
-    #         ]
+    plots = [{"gb":groupbyl,
+              "fin":["TDIS","TTRA"],
+              "fout":[],
+              "title" :"Networks",
+              "short":"net"},
+              {"gb":groupbyl,
+                "fin":["DH","SDIS"],
+                "fout":["DHMT"],
+                "title" : "District heating",
+                "short":"dh"},
+              {"gb":groupbyl,
+            "fin":["HPSNAT"],
+            "fout":[],
+            "title" :"H2 production",
+            "short":"h2"},
+              {"gb":groupbys,
+                "fin":["DD","DNDO"],
+                "fout":[],
+                "title" : "Building techs",
+                "short":"build"}
+            ]
 
-    # d = plots[0]
-    # plot_data_4= arrange_data(results=data,
-    #                           var="CostCapital",
-    #                        x=["TECHNOLOGY"],
-    #                        xscale=xscale,
-    #                        filter_in={"TECHNOLOGY":d["fin"]},
-    #                        filter_out={"TECHNOLOGY":d["fout"]},
-    #                        zgroupby=["TECHNOLOGY"],
-    #                        cgroupby=d["gb"],
-    #                        naming = naming)
+    plot_data_4 = list()
+    for d in plots:
+        plot_data_4.append(arrange_data(results=data,
+                                  var="CostCapital",
+                                  #xscale=xscale,
+                                  filter_in={"TECHNOLOGY":d["fin"],
+                                             "YEAR":[2023,2025,2030,
+                                                     2035,2040,2045]},
+                                  filter_out={"TECHNOLOGY":d["fout"]},
+                                  zgroupby=["RUN","TECHNOLOGY"],
+                                  cgroupby=d["gb"],
+                                  naming = naming))
+        
+    for d,p in zip(plot_data_4,plots):
+        # convert to billions
+        d["VALUE"] =  d["VALUE"]/1000
+        # convert to per year
+        d["VALUE"] =  d["VALUE"]/(2049-2023)
+        # save data
+        d.to_csv(f"./data/plot_data_04_{p['short']}.csv")  
 
 
 
@@ -556,4 +574,43 @@ if __name__ == "__main__":
     plot_data_08 = plot_data_08.stack([1,2])
     # save data
     plot_data_08.to_csv("./data/plot_data_08.csv")   
+    
+    
+    # Data analysis element 09 –  HP installations - domestic ASHP
+    
+    # to load from model data
+    # techcaps = pd.read_csv("PATHTODIR/heat_peak_dwelling.csv",index_col=("LSOA11CD",
+    #                                                            "TECHNOLOGY"))
+    # # FIXME: this could use the data for each property type and LA not just the
+    # # average (not possible when using this calculation elsewhere to set
+    # # deployment constraint)
+    # techcaps = techcaps.xs("AVERAGE")
+    # techcaps = techcaps.drop("PROPERTY_TYPE",axis=1)
+    # techcaps = techcaps.groupby("TECHNOLOGY").mean()
+    # techcaps = pd.to_csv("./data/dwelling_tech_caps.csv")
+    
+    
+    # to load from processed file
+    techcaps = pd.read_csv("./data/dwelling_tech_caps.csv",
+                           index_col=("TECHNOLOGY"))
+    
+    plot_data_09 = arrange_data(results=data,
+                                var="NewCapacity",
+                                xscale=xscale,
+                                filter_in={"YEAR":[2015,2022,2023,2025,2030,
+                                                2035,2040,2045,2050,2055],
+                                           "TECHNOLOGY":["ASHP"]},
+                                zgroupby=["RUN","TECHNOLOGY","YEAR"],
+                                cgroupby={"TECHNOLOGY":lambda x: x[0:4]},
+                                #naming=naming,
+                                #zorder=zo,
+                                )
+
+    # FIXME: this is a simplified calc, might need to improve
+    plot_data_09 = plot_data_09/techcaps.loc["ASHP"].mean()
+
+    #df = df.divide(techcaps["peakcap"],level="TECHNOLOGY")*10**6
+    
+    # save data
+    plot_data_09.to_csv("./data/plot_data_09.csv")   
     

@@ -2,6 +2,7 @@ from dash import Dash, html, dcc, callback, Output, Input
 import dash_bootstrap_components as dbc
 import pandas as pd
 
+
 #CONTENT
 content_title = 'ENERGY TRANSITION'
 content_description = 'The graphs show the national progress of energy transition in the UK'
@@ -16,8 +17,6 @@ content_lev_2_tooltip = 'This lever contraints the rollout of heat pumps. [...]'
 
 
 #EXTRACT SCENARIOS AND LEVERS
-df = pd.read_csv('./data/plot_data_01.csv')
-scenarios = sorted(df['RUN'].unique())
 
 # FIXME: define these scenarios in a data file and load from the file
 predef_scenarios = [{'label': 'Base net-zero scenario',
@@ -25,7 +24,7 @@ predef_scenarios = [{'label': 'Base net-zero scenario',
                     {'label': 'High ambition scenario',
                      'value':'nz-2040_hp-01'}]
 # create list of dropdown options including style
-options = [{'label':html.Span([d['label']], style={'color': '#808080',
+options = [{'label':html.Span(d['label'], style={'color': '#808080',
                                           'font-size': '14px'}),
             'value':d['value']
             } for d in predef_scenarios]

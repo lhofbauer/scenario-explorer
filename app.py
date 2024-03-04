@@ -1,10 +1,13 @@
 from dash import Dash, html, dcc, callback, Output, Input, State, no_update
 import dash_bootstrap_components as dbc
 import pandas as pd
+import numpy as np
 import plotly.express as px
 import json
-from component import Sidebar, Tabs, Barchart, Hexmap, ClusterChart, Pagination
+from component import Sidebar, Tabs, Barchart, Linechart, Hexmap, ClusterChart, Pagination
 
+from pathlib import Path
+appdir = str(Path(__file__).parent.resolve())
 
 app = Dash(__name__,
            title='Energy transition scenario explorer',
@@ -15,9 +18,42 @@ config = {
     'scrollZoom': True
 }
 
-# EXTRACT SCENARIOS
-df = pd.read_csv('./data/plot_data_01.csv')
-scenarios = sorted(df['RUN'].unique())
+# LOAD STYLE DATA
+palette = 'tol-light'
+continuous = False
+theme = 'default'
+
+cp = pd.read_csv(f'{appdir}/data/colour_palette.csv',
+                 index_col=["PALETTE"])
+cp = cp.loc[palette,:]
+cp = cp.sort_values("PC_CODE")
+
+if not continuous:
+    ca = pd.read_csv(f'{appdir}/data/colour_allocation.csv',
+                     index_col=["THEME"]) 
+    
+    naming = pd.read_csv(f'{appdir}/data/naming.csv',
+                         index_col=["NAME_IN_MODEL"])
+    naming = naming["NAME"]
+    ca["ARTEFACT"] = ca["ARTEFACT"].replace(naming)
+    
+    ca = ca.loc[theme,:]
+    ca = ca.merge(right=cp[["PC_CODE",
+                            "COLOUR_CODE"]],
+                  how="left",
+                  on="PC_CODE")
+    ca = ca.drop("PC_CODE",axis=1)
+    ca = ca.set_index("ARTEFACT")
+    ca = ca["COLOUR_CODE"].to_dict()
+if continuous:
+    ca = list()
+    ca.append([0,cp.loc[cp["PC_CODE"]==-1,"COLOUR_CODE"].squeeze()])
+    colours = cp.loc[cp["PC_CODE"]!=-1,"COLOUR_CODE"].to_list()
+    for s, c in zip(np.linspace(0.001,1,len(colours)), colours):
+        ca.append([s, c])
+
+# cdm = utils.get_colour_map(palette="tol-light")
+cdm = ca
 
 
 # DEFINE LAYOUT
@@ -68,9 +104,12 @@ def update_scenario_list(count, scens, nz, hp, name):
     
     if name == '':
         name = 'Scenario '+str(count)
-        
-    scens.append({'label': html.Span(children=[name], style={'color': '#808080', 'font-size': '14px'}),
-                             'value': f'nz-{nz}_hp-{hp:02d}'})
+    exscen = [s['value'] for s in scens]
+    if f'nz-{nz}_hp-{hp:02d}' not in exscen:    
+        scens.append({'label': html.Span(children=name,
+                                         style={'color': '#808080',
+                                                'font-size': '14px'}),
+                      'value': f'nz-{nz}_hp-{hp:02d}'})
     
     return scens
 
@@ -83,9 +122,9 @@ def update_scenario(scens):
     
     # FIXME: currently just taking the first scenario, to be updated
     if isinstance(scens,str):
-        scenarios = scens
+        scenarios = [scens]
     else:
-        scenarios = scens[0]
+        scenarios = scens
     
     return scenarios
 
@@ -103,7 +142,7 @@ def update_filter_style(tab):
     filter_deactive_dropdown = {'display':'none'}
     filter_deactive_figures =  {'padding-top':'0px'}
 
-    if tab in ['tab-3']:
+    if tab in ['tab-2']:
         return filter_active_dropdown, filter_active_figures
     else:
         return filter_deactive_dropdown, filter_deactive_figures
@@ -113,47 +152,97 @@ def update_filter_style(tab):
     Input('scenario_store','data'),
     Input('tabs', 'active_tab'),
     Input('area_dropdown','value'),
+    State('chosen_scenario_dropdown', 'options')
 )
-def update_graphs(scenario, tab, area):
+def update_graphs(scenarios, tab, area, scen_options):
     
+    scen_naming = {s['value']:s['label']['props']['children'] for s in scen_options}
+    
+    scenario = scenarios[0]
     # Create graphs for the chosen tab
     if tab == 'tab-1':
-        graph1 = Barchart.WideFormBarchart(
+        
+        df_gen = pd.read_csv(f'{appdir}/data/plot_data_01.csv')
+        df_cost = pd.read_csv(f'{appdir}/data/plot_data_03.csv')
+        df_inst = pd.read_csv(f'{appdir}/data/plot_data_09.csv')
+        df_gen_loc = pd.read_csv(f'{appdir}/data/plot_data_02.csv')
+        
+        files = ["plot_data_04_net.csv","plot_data_04_dh.csv",
+                 "plot_data_04_h2.csv","plot_data_04_build.csv"]
+        df_inv = [pd.read_csv(f'{appdir}/data/'+f) for f in files]
+        
+        graph6 = Barchart.ScenCompGenBarchart(
+                id = "heat_gen_cost_comp",
+                title="te",
+                df_gen=df_gen,
+                df_cost=df_cost,
+                year=2050,
+                scenarios = scenarios,
+                naming=scen_naming,
+                colormap = cdm)
+        
+        graph10 = Linechart.GenericLinechart(
+                id = 'hp_installations',
+                df = df_inst,
+                title="Heat pump installations (domestic)",
+                x="YEAR",
+                y="VALUE",
+                category="RUN",
+                scenarios = scenarios,
+                naming=scen_naming,
+                x_label = "Year",
+                y_label = "Number of HPs installed per year (millions)",
+                l_label = "Scenarios"                            
+                )  
+        
+        graph2 = Hexmap.GenericHexmap(
+                id = "heat_generation_map",
+                df = df_gen_loc,
+                title = None,
+                zlabel = "Fraction<br>supplied by<br>technology (-)",
+                techs = ["Air-source HP", "Heat interface unit",
+                 "Electric resistance heater","Biomass boiler",
+                 "H2 boiler"],
+                year = 2050,
+                scenarios = scenarios,
+                naming=scen_naming,
+                range_color=[0,1])
+        
+        graph8 = Barchart.ScenCompCostBarchart(
+                id = "heat_cost_comp",
+                df_cost=df_cost,
+                year=2050,
+                scenarios = scenarios,
+                naming=scen_naming,
+                title="Energy system cost in 2050",
+                z_label="Sector",
+                y_label="Cost (billion GBP)")
+           
+        graph9 = Barchart.ScenCompInvBarchart(
+                id = "heat_inv_comp",
+                df_inv=df_inv,
+                title="Annual investment requirements",
+                scenarios = scenarios,
+                naming=scen_naming)
+        
+        
+        graph1 = Barchart.LongFormBarchart(
                 'heat_generation_chart',
-                './data/plot_data_01.csv',
-                "Historical Data (2015) and Prediction",
-                "YEAR",
-                2,   
+                f'{appdir}/data/plot_data_01.csv',
+                title="testt",
+                x="YEAR",
+                y="VALUE",
+                category="TECHNOLOGY",
                 scenario = scenario,
                 x_label = "year",
                 y_label = "watt",
                 sex =  "Technologies"                             
                 )                             
         
-        graph2 = Hexmap.WideFormHexmap(
-                "heat_generation_map",
-                "./data/plot_data_02.csv",
-                "Year 2050 Predication by Region",
-                "Fraction supplied by technology (-)",
-                "Air-source HP",
-                2050,
-                scenario = scenario)
-        
-        
-        graph5 = Hexmap.LongFormHexmap(
-                "national_net_zero_map",
-                "./data/plot_data_05.csv",
-                "Predicted Year of Net-Zero Achievement",
-                "VALUE",
-                scenario = scenario,
-                sex = 'year')
-        
-        glist = [graph1, graph2, graph5]
-        
-    elif tab == 'tab-2':
+       
         graph3 = Barchart.LongFormBarchart(
                 'heat_generation_cost',
-                './data/plot_data_03.csv',
+                f'{appdir}/data/plot_data_03.csv',
                 "Historical Data (2015) and Prediction",
                 "YEAR",
                 "VALUE",
@@ -163,35 +252,73 @@ def update_graphs(scenario, tab, area):
                 y_label = "cost",
                 sex = 'Technologies'                             
                 )
-        glist = [graph3]
+        
+        
+        graph5 = Hexmap.LongFormHexmap(
+                "national_net_zero_map",
+                f'{appdir}/data/plot_data_05.csv',
+                "Predicted Year of Net-Zero Achievement",
+                "VALUE",
+                scenario = scenario,
+                sex = 'year')
 
-    elif tab == 'tab-3':
+      
+        
+        
+        glist = [dbc.Row(dbc.Col([html.Div("Technology mix",
+                                          className ='section_title'),
+                                 html.Hr()])),
+                 dbc.Row([
+                        dbc.Col(html.Div(graph6)),
+                        dbc.Col(html.Div(graph10)),
+                    ], className='figure_row'),
+                 dbc.Row([
+                        dbc.Col(html.Div(graph2)),
+                        ], className='figure_row'),
+                 dbc.Row(dbc.Col([html.Div("Economics",
+                                           className ='section_title'),
+                                          html.Hr()])),
+                 dbc.Row([
+                        dbc.Col(html.Div(graph8)),
+                        dbc.Col(html.Div(graph9)),
+                    ], className='figure_row'),
+                 
+                 dbc.Row(
+                    [
+                        dbc.Col(html.Div(graph1)),
+                        dbc.Col(html.Div(graph3)),
+                    ], className='figure_row'),
+                 
+
+                 
+                 dbc.Row([
+                        dbc.Col(html.Div(graph5)),
+                    ], className='figure_row'),
+
+                ]
+        # html.Div([graph1, graph2, graph5],
+        #                  style={'display': 'flex', 'flexDirection': 'row'})]
+        
+
+    elif tab == 'tab-2':
         graph7 = ClusterChart.WideFromBarCharts(
                                 'regional_heat_generation',
-                                "./data/plot_data_07.csv",
+                                f'{appdir}/data/plot_data_07.csv',
                                 "Historical Data (2015) and Prediction")
         
         graph7_cluster = graph7.HeatGeneration(3, "YEAR", "REGION", area,
                                             x_label = "year", y_label = 'watt', 
                                             scenario = scenario, sex  = 'Technologies')
         glist = [graph7_cluster]
+        
+    elif tab == 'tab-3':
+       
+        glist = ["Information on everything to go here."]
 
 
-    # Define Tab Figure Group Here
-    # HG = Heat generation, CI = Cost and Investment
-    # RH = Regional Heat Generation
-    # fig_group = {'HG' : [graph1, graph2, graph5],
-    #              'CI' : [graph3],
-    #              'RH' : [graph7_cluster]}  
-
-    # Define get figure function using abbreviation index
-    def getFig(tab):
-        if tab in ['tab-3']:
-            return glist
-        else:
-            return glist
-
-    return getFig(tab)
+    return dbc.Container(glist,
+                         fluid=True,
+                         style={'background':'white'})
 
 if __name__ == '__main__':
     app.run_server(host='127.0.0.1', port='8050', debug=True)

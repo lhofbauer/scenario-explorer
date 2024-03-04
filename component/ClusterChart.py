@@ -6,8 +6,12 @@ import json
 from component import Pagination
 #Check Color Scheme https://plotly.com/python/discrete-color/
 
+from pathlib import Path
+appdir = str(Path(__file__).parent.parent.resolve())
+
+
 # Change the region code to name
-mapfile = "./data/uk-local-authority-districts-2023.hexjson"
+mapfile = f'{appdir}/data/uk-local-authority-districts-2023.hexjson'
 
 # load and process hexmap file
 with open(mapfile, "r", encoding = "utf-8") as json_file:
@@ -15,7 +19,7 @@ with open(mapfile, "r", encoding = "utf-8") as json_file:
 mapfiledata = data["hexes"]
 
 # Define the areas and fetch the name
-areasfile = "./data/areas_codes_names.json"
+areasfile = f'{appdir}/data/areas_codes_names.json'
 with open(areasfile, 'r', encoding = 'utf-8') as json_file:
     data = json.load(json_file)
 
@@ -26,7 +30,7 @@ areas_object = {v: k for k, v in data.items()}
 areas_list = [name for code, name in data.items()]
 
 # {regionCode:areaCode} mapping file
-region_area_code_mapping = './data/region_area_code_mapping.json'
+region_area_code_mapping = f'{appdir}/data/region_area_code_mapping.json'
 with open(region_area_code_mapping, 'r', encoding = 'utf-8') as json_file:
     data = json.load(json_file)
 

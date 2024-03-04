@@ -2,6 +2,10 @@ from dash import Dash, html, dcc, callback, Output, Input
 import dash_bootstrap_components as dbc
 import json
 
+
+from pathlib import Path
+appdir = str(Path(__file__).parent.parent.resolve())
+
 # STYLE 
 # (ONLY ATTRIBUTES WHICH CANNOT BE DEFINED IN CSS FILE)
 style_active_label = {'background-color':"#fff",
@@ -13,7 +17,7 @@ style_active_label = {'background-color':"#fff",
 # COMPONENT
 # - DEFINE FILTER FOR REGIONS
 # -- Define the areas and fetch the name
-areasfile = "./data/areas_codes_names.json"
+areasfile = f'{appdir}/data/areas_codes_names.json'
 with open(areasfile, 'r', encoding = 'utf-8') as json_file:
     data = json.load(json_file)
 
@@ -30,19 +34,19 @@ def tabs(figures : list):
     [
         dbc.Tabs(
             [
-                dbc.Tab(label = "Heat Generation", 
+                dbc.Tab(label = "National view", 
                         tab_id = "tab-1",    
                         tab_class_name = 'tab',                
                         label_class_name = 'tab_label',
                         active_label_style = style_active_label
                         ),
-                dbc.Tab(label = "Cost and Investment", 
+                dbc.Tab(label = "Local view", 
                         tab_id = "tab-2", 
                         tab_class_name = 'tab',
                         label_class_name = 'tab_label',
                         active_label_style = style_active_label         
                         ),
-                dbc.Tab(label = "Heat Generation (Regions)", 
+                dbc.Tab(label = "Help", 
                         tab_id = "tab-3",     
                         tab_class_name = 'tab',     
                         label_class_name = 'tab_label',
