@@ -153,25 +153,24 @@ def update_filter_style(tab):
     Output('figure-area', 'children'),
     Input('scenario_store','data'),
     Input('tabs', 'value'),
+    Input('subtabs_1','value'),
     Input('area_dropdown','value'),
     State('chosen_scenario_dropdown', 'options')
 )
-def update_graphs(scenarios, tab, area, scen_options):
+def update_graphs(scenarios, tab, subtab, area, scen_options):
     
     scen_naming = {s['value']:s['label']['props']['children'] for s in scen_options}
     
     scenario = scenarios[0]
     # Create graphs for the chosen tab
-    if tab == 'tab-1':
+    if tab == 'tab-1' and subtab == 'subtab-1-1':
         
         df_gen = pd.read_csv(f'{appdir}/data/plot_data_01.csv')
         df_cost = pd.read_csv(f'{appdir}/data/plot_data_03.csv')
         df_inst = pd.read_csv(f'{appdir}/data/plot_data_09.csv')
         df_gen_loc = pd.read_csv(f'{appdir}/data/plot_data_02.csv')
         
-        files = ["plot_data_04_net.csv","plot_data_04_dh.csv",
-                 "plot_data_04_h2.csv","plot_data_04_build.csv"]
-        df_inv = [pd.read_csv(f'{appdir}/data/'+ f) for f in files]
+
         
         graph6 = Barchart.ScenCompGenBarchart(
                 id = "heat_gen_cost_comp",
@@ -195,8 +194,7 @@ def update_graphs(scenarios, tab, area, scen_options):
                 x_label = "Year",
                 y_label = "Number of HPs installed per year (millions)",
                 l_label = "Scenarios"                            
-                )  
-        
+                )
         graph2 = Hexmap.GenericHexmap(
                 id = "heat_generation_map",
                 df = df_gen_loc,
@@ -210,6 +208,22 @@ def update_graphs(scenarios, tab, area, scen_options):
                 naming=scen_naming,
                 range_color=[0,1])
         
+        glist = [dbc.Row([
+                        dbc.Col(html.Div(graph6)),
+                        dbc.Col(html.Div(graph10)),
+                    ], className='figure_row'),
+                 dbc.Row([
+                        dbc.Col(html.Div(graph2)),
+                        ], className='figure_row'),
+                 ]
+           
+    elif tab == 'tab-1' and subtab == 'subtab-1-2':
+        
+        files = ["plot_data_04_net.csv","plot_data_04_dh.csv",
+                 "plot_data_04_h2.csv","plot_data_04_build.csv"]
+        df_inv = [pd.read_csv(f'{appdir}/data/'+ f) for f in files]
+        df_cost = pd.read_csv(f'{appdir}/data/plot_data_03.csv')
+
         graph8 = Barchart.ScenCompCostBarchart(
                 id = "heat_cost_comp",
                 df_cost = df_cost,
@@ -256,30 +270,9 @@ def update_graphs(scenarios, tab, area, scen_options):
                 )
         
         
-        graph5 = Hexmap.LongFormHexmap(
-                "national_net_zero_map",
-                f'{appdir}/data/plot_data_05.csv',
-                "Predicted Year of Net-Zero Achievement",
-                "VALUE",
-                scenario = scenario,
-                sex = 'year')
 
-        
-        
-        glist = [dbc.Row(dbc.Col([html.Div("Technology mix",
-                                          className ='section_title'),
-                                 html.Hr()])),
-                 dbc.Row([
-                        dbc.Col(html.Div(graph6)),
-                        dbc.Col(html.Div(graph10)),
-                    ], className='figure_row'),
-                 dbc.Row([
-                        dbc.Col(html.Div(graph2)),
-                        ], className='figure_row'),
-                 dbc.Row(dbc.Col([html.Div("Economics",
-                                className ='section_title'),
-                                html.Hr()])),
-                 dbc.Row([
+
+        glist = [dbc.Row([
                         dbc.Col(html.Div(graph8)),
                         dbc.Col(html.Div(graph9)),
                     ], className='figure_row'),
@@ -289,11 +282,47 @@ def update_graphs(scenarios, tab, area, scen_options):
                         dbc.Col(html.Div(graph1)),
                         dbc.Col(html.Div(graph3)),
                     ], className='figure_row'),
-                                  
-                 dbc.Row([
-                        dbc.Col(html.Div(graph5)),
-                    ], className='figure_row'),
+                ]
+        
+    elif tab == 'tab-1' and subtab == 'subtab-1-3':
+        
+        df_em = pd.read_csv(f'{appdir}/data/plot_data_10.csv')
+        df_em_loc = pd.read_csv(f'{appdir}/data/plot_data_05.csv')
+        
+        graph1 = Linechart.GenericLinechart(
+                id = 'em_pathways',
+                df = df_em,
+                title="Emission pathways",
+                x="YEAR",
+                y="VALUE",
+                category="RUN",
+                scenarios = scenarios,
+                naming=scen_naming,
+                x_label = "Year",
+                y_label = "CO2eq emissions (kt)",
+                l_label = "Scenarios"                            
+                )
+        
+        graph2 = Hexmap.GenericHexmap(
+                id = "net-zero_map",
+                df = df_em_loc,
+                title = None,
+                zlabel = "Year of 95%<br> emission<br> reduction",
+                scenarios = scenarios,
+                naming=scen_naming,
+                range_color=[2025,2060])
+        
 
+        
+        glist = [dbc.Row([
+                        dbc.Col(html.Div(graph1)),
+                        dbc.Col(html.Div(graph1)),
+                    ], className='figure_row'),
+                 
+                 dbc.Row(
+                    [
+                        dbc.Col(html.Div(graph2)),
+                    ], className='figure_row'),
                 ]
         # html.Div([graph1, graph2, graph5],
         #                  style={'display': 'flex', 'flexDirection': 'row'})]

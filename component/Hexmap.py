@@ -52,19 +52,19 @@ geojson = mapdata.__geo_interface__
 
 
 
-def GenericHexmap(id, df, techs, scenarios, year, title=None, zlabel=None,
+def GenericHexmap(id, df,  scenarios, techs=None, year= None, title=None, zlabel=None,
                   naming=None,
                   style = None,
                   range_color=None):
 
     df = df[df['RUN'].isin(scenarios)] if scenarios else df
-    df = df[(df['YEAR'] == year)]
+    df = df[(df['YEAR'] == year)] if year else df
     df = df.replace(naming)
 
     scenarios = [naming[s] if s in naming.keys()
                  else s for s in scenarios] if naming else scenarios
     
-    if len(techs)==1 and len(scenarios)==1:
+    if techs and len(techs)==1 and len(scenarios)==1:
         pass
         # df = df[["REGION", technology]]
         # techmap = mapdata.merge(right = df, left_on = map_column, right_on = 'REGION',
@@ -83,12 +83,49 @@ def GenericHexmap(id, df, techs, scenarios, year, title=None, zlabel=None,
         #                 )  
         # fig.update_geos(fitbounds = "locations", visible = False)
         # fig.update_layout(paper_bgcolor = 'white', plot_bgcolor = 'white', title = title)
+    elif techs is None:
         
+        techmap = mapdata.merge(right = df, left_on = map_column, right_on = 'REGION',
+                                how='left')
+        
+        gobj = list()
+        
+        for scen in scenarios:
+            ftechmap = techmap[(techmap["RUN"] == scen)]
+            
+            fig = px.choropleth(ftechmap,
+                            geojson = geojson,
+                            locations = map_column,
+                            color = "VALUE",
+                            featureidkey = "properties." + map_column,
+                            projection = "mercator",
+                            #color_continuous_scale="Emrld",
+                            #hover_name=loc_column[:-2]+"NM",
+                            #hover_data={loc_column:False},
+                            )  
+            gobj.append(fig)
+                
+        cols = len(scenarios)
+        rows = 1
+        specs = [[{'type': 'choropleth'} for c in range(cols)] for r in range(rows)]
+        fig = make_subplots(rows=rows, cols=cols,specs=specs,
+                            horizontal_spacing = 0,vertical_spacing = 0,
+                            column_titles=scenarios , row_titles=None)
+        i=0
+        for c in range(cols):
+            fig.add_trace(gobj[i]["data"][0],row=1, col=c+1)
+            i = i+1
+        
+        fig.update_geos(visible=False,
+                        lonaxis_range=[-7.5,17],
+                        lataxis_range=[-3.5,27])
+        
+
+        fig.update_coloraxes(colorbar_title=dict(text=zlabel),
+                             cmin=range_color[0] if range_color else None,
+                             cmax=range_color[1] if range_color else None)
     else:
 
-        #techs = ["ASHP","HIUM","ELRE","H2BO"]
-     
-        #scens_names = [naming[s] for s in scens]
         # ccm = utils.get_colour_map(palette="tol-inc",continuous=True)
         # ccm = ccm[1:]
         # ccm[0][0]=0
@@ -133,13 +170,9 @@ def GenericHexmap(id, df, techs, scenarios, year, title=None, zlabel=None,
         fig.update_geos(visible=False,
                         lonaxis_range=[-7.5,17],
                         lataxis_range=[-3.5,27])
-        
-        fig.update_layout(margin=dict(b=0,t=20,l=0,r=0),
-                          title_pad=dict(b=0,t=0,l=0,r=0),
-                          title=title)
-                          #coloraxis=dict(colorscale = ccm))
 
         fig.update_coloraxes(colorbar_title=dict(text=zlabel),
+                             #colorscale = ccm,
                              cmin=range_color[0] if range_color else None,
                              cmax=range_color[1] if range_color else None)
     

@@ -517,6 +517,17 @@ if __name__ == "__main__":
     
     # save data
     plot_data_05.to_csv("./data/plot_data_05.csv")
+
+
+    # Data analysis element 10 –  Emission pathways
+     
+    em = data[0]["AnnualEmissions"].copy()
+    # divide by number of years in period to get average annual emissions
+    em["VALUE"] = em["VALUE"].multiply(xscale,axis=0)
+    plot_data_10 = em.xs("UK",level="REGION")
+    
+    # save data
+    plot_data_10.to_csv("./data/plot_data_10.csv")    
     
     
     # Data analysis element 07 –  Local heat generation
@@ -539,8 +550,9 @@ if __name__ == "__main__":
     # save data
     plot_data_07.to_csv("./data/plot_data_07.csv")
     
-    # Data analysis element 08 –  Local cost structure graph   
     
+    
+    # Data analysis element 08 –  Local cost structure graph   
     def groupby(x):
         if ("WDIS" in x) or ("RAUP" in x):
             n = "Building Heat Dist."

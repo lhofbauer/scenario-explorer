@@ -38,11 +38,17 @@ subtabs_1 = html.Div ([
                         className = 'custom-subtab_1_1',
                         selected_className = 'custom-subtab_1_1-selected'
                         ),
-        dcc.Tab(label = "Economics", 
+        dcc.Tab(label = "Cost & Investment", 
                         id = 'subtab-1-2',
                         value = "subtab-1-2",
                         className = 'custom-subtab_1_2',
                         selected_className = 'custom-subtab_1_2-selected'
+                        ),
+        dcc.Tab(label = "Emissions", 
+                        id = 'subtab-1-3',
+                        value = "subtab-1-3",
+                        className = 'custom-subtab_1_3',
+                        selected_className = 'custom-subtab_1_3-selected'
                         ),
     ], id = 'subtabs_1', value = 'subtab-1-1')
 ])
