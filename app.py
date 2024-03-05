@@ -5,12 +5,13 @@ import numpy as np
 import plotly.express as px
 import json
 from component import Sidebar, Tabs, Barchart, Linechart, Hexmap, ClusterChart, Pagination
-
 from pathlib import Path
+
+# Get the absolute path of the parent directory containing the current script
 appdir = str(Path(__file__).parent.resolve())
 
 app = Dash(__name__,
-           title='Energy transition scenario explorer',
+           title='Energy Transition Scenario Explorer',
            update_title="Updating ...",
            external_stylesheets=[dbc.themes.COSMO])
 
@@ -25,7 +26,7 @@ theme = 'default'
 
 cp = pd.read_csv(f'{appdir}/data/colour_palette.csv',
                  index_col=["PALETTE"])
-cp = cp.loc[palette,:]
+cp = cp.loc[palette,:] #df.loc[row_indexer, column_indexer] : -> select all rows
 cp = cp.sort_values("PC_CODE")
 
 if not continuous:
@@ -35,21 +36,22 @@ if not continuous:
     naming = pd.read_csv(f'{appdir}/data/naming.csv',
                          index_col=["NAME_IN_MODEL"])
     naming = naming["NAME"]
-    ca["ARTEFACT"] = ca["ARTEFACT"].replace(naming)
+    ca["ARTEFACT"] = ca["ARTEFACT"].replace(naming) # Map the name with the index as the baseline
     
     ca = ca.loc[theme,:]
-    ca = ca.merge(right=cp[["PC_CODE",
+    ca = ca.merge(right = cp[["PC_CODE",
                             "COLOUR_CODE"]],
-                  how="left",
-                  on="PC_CODE")
-    ca = ca.drop("PC_CODE",axis=1)
+                  how = "left",
+                  on = "PC_CODE")
+    ca = ca.drop("PC_CODE", axis = 1)
     ca = ca.set_index("ARTEFACT")
     ca = ca["COLOUR_CODE"].to_dict()
+
 if continuous:
     ca = list()
     ca.append([0,cp.loc[cp["PC_CODE"]==-1,"COLOUR_CODE"].squeeze()])
-    colours = cp.loc[cp["PC_CODE"]!=-1,"COLOUR_CODE"].to_list()
-    for s, c in zip(np.linspace(0.001,1,len(colours)), colours):
+    colours = cp.loc[cp["PC_CODE"]!=-1, "COLOUR_CODE"].to_list()
+    for s, c in zip(np.linspace(0.001, 1, len(colours)), colours):
         ca.append([s, c])
 
 # cdm = utils.get_colour_map(palette="tol-light")
@@ -169,16 +171,16 @@ def update_graphs(scenarios, tab, area, scen_options):
         
         files = ["plot_data_04_net.csv","plot_data_04_dh.csv",
                  "plot_data_04_h2.csv","plot_data_04_build.csv"]
-        df_inv = [pd.read_csv(f'{appdir}/data/'+f) for f in files]
+        df_inv = [pd.read_csv(f'{appdir}/data/'+ f) for f in files]
         
         graph6 = Barchart.ScenCompGenBarchart(
                 id = "heat_gen_cost_comp",
                 title="te",
-                df_gen=df_gen,
-                df_cost=df_cost,
-                year=2050,
+                df_gen = df_gen,
+                df_cost = df_cost,
+                year = 2050,
                 scenarios = scenarios,
-                naming=scen_naming,
+                naming = scen_naming,
                 colormap = cdm)
         
         graph10 = Linechart.GenericLinechart(
@@ -210,20 +212,20 @@ def update_graphs(scenarios, tab, area, scen_options):
         
         graph8 = Barchart.ScenCompCostBarchart(
                 id = "heat_cost_comp",
-                df_cost=df_cost,
-                year=2050,
+                df_cost = df_cost,
+                year = 2050,
                 scenarios = scenarios,
-                naming=scen_naming,
-                title="Energy system cost in 2050",
-                z_label="Sector",
-                y_label="Cost (billion GBP)")
+                naming = scen_naming,
+                title = "Energy system cost in 2050",
+                z_label = "Sector",
+                y_label = "Cost (billion GBP)")
            
         graph9 = Barchart.ScenCompInvBarchart(
                 id = "heat_inv_comp",
-                df_inv=df_inv,
-                title="Annual investment requirements",
+                df_inv = df_inv,
+                title = "Annual investment requirements",
                 scenarios = scenarios,
-                naming=scen_naming)
+                naming = scen_naming)
         
         
         graph1 = Barchart.LongFormBarchart(
@@ -262,7 +264,6 @@ def update_graphs(scenarios, tab, area, scen_options):
                 scenario = scenario,
                 sex = 'year')
 
-      
         
         
         glist = [dbc.Row(dbc.Col([html.Div("Technology mix",
@@ -276,8 +277,8 @@ def update_graphs(scenarios, tab, area, scen_options):
                         dbc.Col(html.Div(graph2)),
                         ], className='figure_row'),
                  dbc.Row(dbc.Col([html.Div("Economics",
-                                           className ='section_title'),
-                                          html.Hr()])),
+                                className ='section_title'),
+                                html.Hr()])),
                  dbc.Row([
                         dbc.Col(html.Div(graph8)),
                         dbc.Col(html.Div(graph9)),
@@ -288,9 +289,7 @@ def update_graphs(scenarios, tab, area, scen_options):
                         dbc.Col(html.Div(graph1)),
                         dbc.Col(html.Div(graph3)),
                     ], className='figure_row'),
-                 
-
-                 
+                                  
                  dbc.Row([
                         dbc.Col(html.Div(graph5)),
                     ], className='figure_row'),
@@ -317,8 +316,8 @@ def update_graphs(scenarios, tab, area, scen_options):
 
 
     return dbc.Container(glist,
-                         fluid=True,
-                         style={'background':'white'})
+                         fluid = True,
+                         style = {'background':'white'})
 
 if __name__ == '__main__':
     app.run_server(host='127.0.0.1', port='8050', debug=True)
