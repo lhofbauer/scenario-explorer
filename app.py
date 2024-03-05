@@ -133,7 +133,7 @@ def update_scenario(scens):
 @callback(
     Output('dropdown_component', 'style'),
     Output('figure-area','style'),
-    Input('tabs', 'active_tab'),
+    Input('tabs', 'value'),
 )
 def update_filter_style(tab):
     filter_active_dropdown = {'display':'block'}
@@ -152,7 +152,7 @@ def update_filter_style(tab):
 @callback(
     Output('figure-area', 'children'),
     Input('scenario_store','data'),
-    Input('tabs', 'active_tab'),
+    Input('tabs', 'value'),
     Input('area_dropdown','value'),
     State('chosen_scenario_dropdown', 'options')
 )

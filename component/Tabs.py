@@ -1,16 +1,11 @@
-from dash import Dash, html, dcc, callback, Output, Input
-import dash_bootstrap_components as dbc
+from dash import html, dcc
 import json
-
-
 from pathlib import Path
+
 appdir = str(Path(__file__).parent.parent.resolve())
 
 # STYLE 
 # (ONLY ATTRIBUTES WHICH CANNOT BE DEFINED IN CSS FILE)
-style_active_label = {'background-color':"#fff",
-                      'font-weight':"700",
-                      'color':'#66c2a5'}
 
 # CONTENT
 
@@ -25,38 +20,64 @@ with open(areasfile, 'r', encoding = 'utf-8') as json_file:
 areas_list = [name for code, name in data.items()]
 area_dropdown =  html.Div([ 
                     html.Div('Areas', id = 'area_label', className = 'facet_name',),
-                    dcc.Dropdown(areas_list, areas_list[0], id = 'area_dropdown'),
+                    dcc.Dropdown(areas_list, areas_list[0], id = 'area_dropdown',
+                                 clearable = False),
                     ], id = 'dropdown_frame')
+
+# -- Pack the dropdown area
+dropdown_component = html.Div(area_dropdown, id = 'dropdown_component')
+
+
+# - SUBTABS
+# -- Subtabs for the tab-1
+subtabs_1 = html.Div ([
+    dcc.Tabs([
+        dcc.Tab(label = "Technology Mix", 
+                        id = 'subtab-1-1',
+                        value = "subtab-1-1",
+                        className = 'custom-subtab_1_1',
+                        selected_className = 'custom-subtab_1_1-selected'
+                        ),
+        dcc.Tab(label = "Economics", 
+                        id = 'subtab-1-2',
+                        value = "subtab-1-2",
+                        className = 'custom-subtab_1_2',
+                        selected_className = 'custom-subtab_1_2-selected'
+                        ),
+    ], id = 'subtabs_1', value = 'subtab-1-1')
+])
 
 # LAYOUT
 def tabs(figures : list):
     return html.Div(
     [
-        dbc.Tabs(
+        dcc.Tabs(
             [
-                dbc.Tab(label = "National view", 
-                        tab_id = "tab-1",    
-                        tab_class_name = 'tab',                
-                        label_class_name = 'tab_label',
-                        active_label_style = style_active_label
+                dcc.Tab([subtabs_1],
+                        label = "National View", 
+                        id = 'tab-1',
+                        value = "tab-1",
+                        className = 'custom-tab_1',
+                        selected_className = 'custom-tab_1-selected'
                         ),
-                dbc.Tab(label = "Local view", 
-                        tab_id = "tab-2", 
-                        tab_class_name = 'tab',
-                        label_class_name = 'tab_label',
-                        active_label_style = style_active_label         
+                dcc.Tab([dropdown_component],
+                        label = "Local View", 
+                        id = 'tab-2',
+                        value = "tab-2",     
+                        className = 'custom-tab_2',
+                        selected_className = 'custom-tab_2-selected'   
                         ),
-                dbc.Tab(label = "Help", 
-                        tab_id = "tab-3",     
-                        tab_class_name = 'tab',     
-                        label_class_name = 'tab_label',
-                        active_label_style = style_active_label
+                dcc.Tab(label = "Help", 
+                        id = 'tab-3',
+                        value = "tab-3",  
+                        className = 'custom-tab_3',
+                        selected_className = 'custom-tab_3-selected'      
                         ),
             ],
             id="tabs",
-            active_tab="tab-1",
+            value="tab-1",
         ),
-        html.Div(area_dropdown, id = 'dropdown_component'),
+        #html.Div(area_dropdown, id = 'dropdown_component'),
         html.Div(figures, id = "figure-area"),
     ], 
     id = 'tab_area'
