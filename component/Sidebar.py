@@ -40,8 +40,8 @@ lev2 = {0:"No limitation",
 def sidebar():
     return html.Div(
        [
-            html.Div(content_title, className ='sidebar_title'),
-            html.Hr(),
+            #html.Div(content_title, className ='sidebar_title'),
+            #html.Hr(),
             html.P(content_description, className = 'sidebar_description'),
             html.Br(),
             html.Div(content_facet_1, className = 'facet_name'),

@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import json
-from component import Sidebar, Tabs, Barchart, Linechart, Hexmap, ClusterChart, Pagination
+from component import Sidebar, Tabs, Barchart, Linechart, Hexmap, ClusterChart, Navbar
 from pathlib import Path
 
 # Get the absolute path of the parent directory containing the current script
@@ -59,10 +59,15 @@ cdm = ca
 
 
 # DEFINE LAYOUT
-app.layout = html.Div([Sidebar.sidebar(),
+app.layout = html.Div([
+                html.Div([Navbar.createNavbar(),
+                       Sidebar.sidebar(),
                        Tabs.tabs([]),
                        dcc.Store(id='scenario_store')
-                      ])
+                      ], id = 'content-container'),
+                Navbar.createFooter()])
+
+
 
 # DEFINE CALLBACKS
 
@@ -132,22 +137,16 @@ def update_scenario(scens):
 
 @callback(
     Output('dropdown_component', 'style'),
-    Output('figure-area','style'),
     Input('tabs', 'value'),
 )
 def update_filter_style(tab):
     filter_active_dropdown = {'display':'block'}
-    filter_active_figures =  {'background-color':'white',
-                                'padding-top':'50px',
-                                'position':'absolute',
-                                'z-index':0}
     filter_deactive_dropdown = {'display':'none'}
-    filter_deactive_figures =  {'padding-top':'0px'}
 
     if tab in ['tab-2']:
-        return filter_active_dropdown, filter_active_figures
+        return filter_active_dropdown
     else:
-        return filter_deactive_dropdown, filter_deactive_figures
+        return filter_deactive_dropdown
 
 @callback(
     Output('figure-area', 'children'),
