@@ -425,22 +425,30 @@ body{
   font-family: Roboto !important;
   font-weight: 600  !important;
   padding-left: 45px;
-  width: 220px !important;
+  width: 240px !important;
   height: 40px !important;
   font-size: 14px;
   color: #66c2a5 !important;
   border: 1px solid #66c2a5 !important;
-  border-radius: 10px;
+  border-radius: 30px;
 }
 
 #local_auth_search {
-  width: 220px;
+  width: 240px;
   color: #66c2a5;
   font-family: Roboto;
   font-size: 14px;
-
+  margin-top: 20px;
 }
 
+.Select-control {
+  border: 1px transparent #A5A5A5;
+  border-radius: 30px;
+}
+
+.Select-placeholder{
+  padding-left: 1rem;
+}
 
 @media(min-width:600px) and (max-width:1199px){
 
