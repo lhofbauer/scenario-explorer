@@ -124,6 +124,8 @@ def GenericHexmap(id, df,  scenarios, techs=None, year= None, title=None, zlabel
         fig.update_coloraxes(colorbar_title=dict(text=zlabel),
                              cmin=range_color[0] if range_color else None,
                              cmax=range_color[1] if range_color else None)
+        
+
     else:
 
         # ccm = utils.get_colour_map(palette="tol-inc",continuous=True)
@@ -175,6 +177,7 @@ def GenericHexmap(id, df,  scenarios, techs=None, year= None, title=None, zlabel
                              #colorscale = ccm,
                              cmin=range_color[0] if range_color else None,
                              cmax=range_color[1] if range_color else None)
+        fig.update_layout(height = len(scenarios) * 400)
     
     return html.Div(
         dcc.Graph(id = id, 

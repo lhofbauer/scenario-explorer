@@ -72,8 +72,8 @@ class WideFromBarCharts:
 
                 graphs.children.append(html.Div(
                                         dcc.Graph(figure = fig,
-                                                style = {'width': '150vh',
-                                                        'height':'80vh'})))
+                                                style = {'width': '120vh',
+                                                        'height':'60vh'})))
         
             else: 
                 fig = px.bar(df_split, x = xaxis, y = categories,
@@ -85,8 +85,8 @@ class WideFromBarCharts:
 
                 graphs.children.append(html.Div(
                                         dcc.Graph(figure = fig,
-                                                style = {'width': '75vh',
-                                                        'height':'40vh'})))
+                                                style = {'width': '60vh',
+                                                        'height':'35vh'})))
 
 
 
