@@ -4,8 +4,8 @@ import pandas as pd
 
 
 #CONTENT
-content_title = 'ENERGY TRANSITION'
-content_description = 'The graphs show the national progress of energy transition in the UK'
+content_title = 'Scenario design'
+content_description = 'Create and choose scenarios to display below.'
 content_facet_1 = 'Create Scenarios'
 dropdown_description = 'Choose a pre-defined or default scenario as starting point.'
 levers_description = 'Adjust the scenario by moving the scenario levers.'
@@ -40,8 +40,8 @@ lev2 = {0:"No limitation",
 def sidebar():
     return html.Div(
        [
-            #html.Div(content_title, className ='sidebar_title'),
-            #html.Hr(),
+            html.Div(content_title, className ='sidebar_title'),
+            html.Hr(),
             html.P(content_description, className = 'sidebar_description'),
             html.Br(),
             html.Div(content_facet_1, className = 'facet_name'),
@@ -65,6 +65,8 @@ def sidebar():
                       placeholder = 'Scenario name'),
             html.Button(id = 'submit_button', n_clicks = 0,
                         children='Create'),
+            html.Br(),
+            html.Br(),
             html.Div(content_facet_2, className = 'facet_name'),
             dcc.Dropdown(options, predef_scenarios[0]['value'],
                          id = 'chosen_scenario_dropdown',
