@@ -11,9 +11,10 @@ from pathlib import Path
 appdir = str(Path(__file__).parent.resolve())
 
 app = Dash(__name__,
-           title='Energy Transition Scenario Explorer',
-           update_title="Updating ...",
-           external_stylesheets=[dbc.themes.COSMO])
+           title = 'Energy Transition Scenario Explorer',
+           update_title = "Updating ...",
+           external_stylesheets = [dbc.themes.COSMO],
+           suppress_callback_exceptions = True)
 
 config = {
     'scrollZoom': True
@@ -149,8 +150,15 @@ def update_scenario(scens):
 #         return filter_deactive_dropdown
     
     
+# Define callback for authority selection in the local view
+@callback(
+        Output('local_auth_search_collapse','is_open'),
+        Input('local_auth_search_button', 'n_clicks')
+)
+def collapse_dropdown(click):
+    is_open = False if click % 2 == 0 else True
+    return is_open
 
-    
     
 @callback(
     Output('figure-area', 'children'),
@@ -426,8 +434,8 @@ def update_graphs(scenarios, tab, subtab, scen_options):
 @callback(
     Output('heat_generation_map', 'figure'),
     Input('year_slider', 'value'),
-    State('scenario_store','data'),
-    State('chosen_scenario_dropdown', 'options')
+    State('scenario_store','data'), 
+    State('chosen_scenario_dropdown', 'options'),
 )
 def update_heat_gen_maps(year, scenarios, scen_options):
     
@@ -451,5 +459,4 @@ def update_heat_gen_maps(year, scenarios, scen_options):
     return fig
 
 if __name__ == '__main__':
-    app.run_server(host='127.0.0.1', port='8050', debug=True,
-                   suppress_callback_exceptions=True)
+    app.run_server(host='127.0.0.1', port='8050', debug=True)

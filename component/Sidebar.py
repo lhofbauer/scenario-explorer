@@ -28,7 +28,7 @@ options = [{'label':html.Span(d['label'], style={'color': '#808080',
                                           'font-size': '14px'}),
             'value':d['value']
             } for d in predef_scenarios]
-    
+
 # FIXME: test levers, to be updated and probably loaded from file
 lev1 = {2040:"2040",
         2045:"2045",
@@ -70,8 +70,9 @@ def sidebar():
             html.Div(content_facet_2, className = 'facet_name'),
             dcc.Dropdown(options, predef_scenarios[0]['value'],
                          id = 'chosen_scenario_dropdown',
-                         clearable = True,
-                         multi=True,
+                         clearable = False,
+                         searchable = False,
+                         multi = True,
                          placeholder = "No scenario chosen."),
             # dcc.Slider(min=2040, max=2050, step=None,marks=lev1,value=2050,
             #            tooltip={'template':'Net-zero target for the UK to be achieved in {value}.',

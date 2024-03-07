@@ -1,6 +1,7 @@
 from dash import html, dcc
 import json
 from pathlib import Path
+import dash_bootstrap_components as dbc
 
 appdir = str(Path(__file__).parent.parent.resolve())
 
@@ -53,6 +54,30 @@ subtabs_1 = html.Div ([
     ], id = 'subtabs_1', value = 'subtab-1-1')
 ])
 
+
+# -- Search bar for local authorities filter embeded in Subtabs for tab-2
+button =  dbc.Button(
+            "Select Local Authorities",
+            id = "local_auth_search_button",
+            n_clicks = 0,
+        )
+
+local_auth_search =  dcc.Dropdown(['example1', 'example2'], 'example1',
+                         id = 'local_auth_search',
+                         clearable = False,
+                         searchable = True,
+                         multi = True,
+                         placeholder = "Choose at least one")
+
+local_auth_search_collapse = dbc.Collapse(
+                            local_auth_search,
+                            id = "local_auth_search_collapse",
+                            is_open = False,)
+
+local_auth_search_component = html.Div([button, local_auth_search_collapse],
+                                       id = 'local_auth_search_component')
+
+
 # -- Subtabs for tab-2
 subtabs_2 = html.Div ([
     dcc.Tabs([
@@ -74,8 +99,10 @@ subtabs_2 = html.Div ([
                         className = 'custom-subtab_2_3',
                         selected_className = 'custom-subtab_2_3-selected'
                         ),
-    ], id = 'subtabs_2', value = 'subtab-2-1')
-])
+    ], id = 'subtabs_2', value = 'subtab-2-1'),
+        local_auth_search_component
+                        ], 
+        id = 'subtabs_2_plus_search_component')
 
 
 # LAYOUT
