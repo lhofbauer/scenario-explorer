@@ -20,9 +20,9 @@ content_lev_2_tooltip = 'This lever contraints the rollout of heat pumps. [...]'
 
 # FIXME: define these scenarios in a data file and load from the file
 predef_scenarios = [{'label': 'Base net-zero scenario',
-                     'value':'nz-2050_hp-00'},
+                     'value':'nz-2045_hp-00'},
                     {'label': 'High ambition scenario',
-                     'value':'nz-2040_hp-01'}]
+                     'value':'nz-2045_hp-01'}]
 # create list of dropdown options including style
 options = [{'label':html.Span(d['label'], style={'color': '#808080',
                                           'font-size': '14px'}),
@@ -54,7 +54,7 @@ def sidebar():
             html.Div(content_lev_1, className = 'facet_item_name',
                      title = content_lev_1_tooltip),
             dcc.Slider(min = 2040, max = 2050, step = None, marks = lev1,
-                       value = 2050,
+                       value = 2045,
                        id= 'nz_slider', className = 'slider'),
             html.Div(content_lev_2, className = 'facet_item_name',
                      title = content_lev_2_tooltip),

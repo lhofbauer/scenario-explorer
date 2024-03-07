@@ -52,10 +52,12 @@ geojson = mapdata.__geo_interface__
 
 
 
-def GenericHexmap(id, df,  scenarios, techs=None, year= None, title=None, zlabel=None,
+def GenericHexmap(id, df,  scenarios, techs=None, year= None, title=None,
+                  zlabel=None,
                   naming=None,
                   style = None,
-                  range_color=None):
+                  range_color=None,
+                  figonly=False):
 
     df = df[df['RUN'].isin(scenarios)] if scenarios else df
     df = df[(df['YEAR'] == year)] if year else df
@@ -178,6 +180,10 @@ def GenericHexmap(id, df,  scenarios, techs=None, year= None, title=None, zlabel
                              cmin=range_color[0] if range_color else None,
                              cmax=range_color[1] if range_color else None)
         fig.update_layout(height = len(scenarios) * 400)
+    
+    if figonly:
+        return fig
+    
     
     return html.Div(
         dcc.Graph(id = id, 

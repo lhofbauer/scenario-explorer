@@ -135,28 +135,31 @@ def update_scenario(scens):
     
     return scenarios
 
-@callback(
-    Output('dropdown_component', 'style'),
-    Input('tabs', 'value'),
-)
-def update_filter_style(tab):
-    filter_active_dropdown = {'display':'block'}
-    filter_deactive_dropdown = {'display':'none'}
+# @callback(
+#     Output('dropdown_component', 'style'),
+#     Input('tabs', 'value'),
+# )
+# def update_filter_style(tab):
+#     filter_active_dropdown = {'display':'block'}
+#     filter_deactive_dropdown = {'display':'none'}
 
-    if tab in ['tab-2']:
-        return filter_active_dropdown
-    else:
-        return filter_deactive_dropdown
+#     if tab in ['tab-2']:
+#         return filter_active_dropdown
+#     else:
+#         return filter_deactive_dropdown
+    
+    
 
+    
+    
 @callback(
     Output('figure-area', 'children'),
     Input('scenario_store','data'),
     Input('tabs', 'value'),
     Input('subtabs_1','value'),
-    Input('area_dropdown','value'),
     State('chosen_scenario_dropdown', 'options')
 )
-def update_graphs(scenarios, tab, subtab, area, scen_options):
+def update_graphs(scenarios, tab, subtab, scen_options):
     
     scen_naming = {s['value']:s['label']['props']['children'] for s in scen_options}
     
@@ -207,13 +210,23 @@ def update_graphs(scenarios, tab, subtab, area, scen_options):
                 naming=scen_naming,
                 range_color=[0,1])
         
+        marks ={y:str(y) for y in range(2025,2056,5)}
+        yslider = dcc.Slider(min = 2025, max = 2055, step = None, marks=marks,
+                             value = 2050,
+                             id= 'year_slider',
+                             className = 'slider'),
+        
         glist = [dbc.Row([
                         dbc.Col(html.Div(graph6)),
                         dbc.Col(html.Div(graph10)),
                     ], className='figure_row'),
                  dbc.Row([
-                        dbc.Col(html.Div(graph2)),
-                        ], className='figure_row'),
+                        dbc.Col(html.Div(yslider),width={'size':4,'offset':8})],
+                     className='figure_row'),
+                 dbc.Row([
+                        dbc.Col(html.Div(graph2))],
+                     className='figure_row'),
+
                  ]
            
     elif tab == 'tab-1' and subtab == 'subtab-1-2':
@@ -328,24 +341,115 @@ def update_graphs(scenarios, tab, subtab, area, scen_options):
         
 
     elif tab == 'tab-2':
-        graph7 = ClusterChart.WideFromBarCharts(
-                                'regional_heat_generation',
-                                f'{appdir}/data/plot_data_07.csv',
-                                "Historical Data (2015) and Prediction")
+        df_gen = pd.read_csv(f'{appdir}/data/plot_data_01.csv')
+        df_cost = pd.read_csv(f'{appdir}/data/plot_data_03.csv')
+        df_inst = pd.read_csv(f'{appdir}/data/plot_data_09.csv')
+        df_gen_loc = pd.read_csv(f'{appdir}/data/plot_data_02.csv')
         
-        graph7_cluster = graph7.HeatGeneration(3, "YEAR", "REGION", area,
-                                            x_label = "year", y_label = 'watt', 
-                                            scenario = scenario, sex  = 'Technologies')
-        glist = [graph7_cluster]
+        
+        
+        graph6 = Barchart.ScenCompGenBarchart(
+                id = "heat_gen_cost_comp",
+                title="te",
+                df_gen = df_gen,
+                df_cost = df_cost,
+                year = 2050,
+                scenarios = scenarios,
+                naming = scen_naming,
+                colormap = cdm)
+        
+        graph10 = Linechart.GenericLinechart(
+                id = 'hp_installations',
+                df = df_inst,
+                title="Heat pump installations (domestic)",
+                x="YEAR",
+                y="VALUE",
+                category="RUN",
+                scenarios = scenarios,
+                naming=scen_naming,
+                x_label = "Year",
+                y_label = "Number of HPs installed per year (millions)",
+                l_label = "Scenarios"                            
+                )
+        graph2 = Hexmap.GenericHexmap(
+                id = "heat_generation_map",
+                df = df_gen_loc,
+                title = None,
+                zlabel = "Fraction<br>supplied by<br>technology (-)",
+                techs = ["Air-source HP", "Heat interface unit",
+                 "Electric resistance heater","Biomass boiler",
+                 "H2 boiler"],
+                year = 2050,
+                scenarios = scenarios,
+                naming=scen_naming,
+                range_color=[0,1])
+        
+        marks ={y:str(y) for y in range(2025,2056,5)}
+        yslider = dcc.Slider(min = 2025, max = 2055, step = None, marks=marks,
+                             value = 2050,
+                             id= 'year_slider',
+                             className = 'slider'),
+        
+        glist = [dbc.Row([
+                        dbc.Col(html.Div(graph6)),
+                        dbc.Col(html.Div(graph10)),
+                    ], className='figure_row'),
+                 dbc.Row([
+                        dbc.Col(html.Div(yslider),width={'size':4,'offset':8})],
+                     className='figure_row'),
+                 dbc.Row([
+                        dbc.Col(html.Div(graph2))],
+                     className='figure_row'),
+
+                 ]
+        # graph7 = ClusterChart.WideFromBarCharts(
+        #                         'regional_heat_generation',
+        #                         f'{appdir}/data/plot_data_07.csv',
+        #                         "Historical Data (2015) and Prediction")
+        
+        # graph7_cluster = graph7.HeatGeneration(3, "YEAR", "REGION", area,
+        #                                     x_label = "year", y_label = 'watt', 
+        #                                     scenario = scenario, sex  = 'Technologies')
+        # glist = [graph7_cluster]
         
     elif tab == 'tab-3':
        
-        glist = ["Information on everything to go here."]
+        glist = [("Information on everything to go here.<br><br><br><br><br>"
+                 "The dashboard source code is Copyright (C) 2024 Leonhard Hofbauer, Yueh-Chin Lin, licensed under a MIT license and available here.")]
 
 
     return dbc.Container(glist,
                          fluid = True,
                          style = {'background':'white'})
 
+
+@callback(
+    Output('heat_generation_map', 'figure'),
+    Input('year_slider', 'value'),
+    State('scenario_store','data'),
+    State('chosen_scenario_dropdown', 'options')
+)
+def update_heat_gen_maps(year, scenarios, scen_options):
+    
+    scen_naming = {s['value']:s['label']['props']['children'] for s in scen_options}
+    df_gen_loc = pd.read_csv(f'{appdir}/data/plot_data_02.csv')
+    
+    fig = Hexmap.GenericHexmap(
+            id = "heat_generation_map",
+            df = df_gen_loc,
+            title = None,
+            zlabel = "Fraction<br>supplied by<br>technology (-)",
+            techs = ["Air-source HP", "Heat interface unit",
+              "Electric resistance heater","Biomass boiler",
+              "H2 boiler"],
+            year = year,
+            scenarios = scenarios,
+            naming=scen_naming,
+            range_color=[0,1],
+            figonly=True)
+
+    return fig
+
 if __name__ == '__main__':
-    app.run_server(host='127.0.0.1', port='8050', debug=True)
+    app.run_server(host='127.0.0.1', port='8050', debug=True,
+                   suppress_callback_exceptions=True)

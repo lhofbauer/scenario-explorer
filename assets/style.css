@@ -355,7 +355,13 @@ body{
 .custom-subtab_1_3,
 .custom-subtab_1_1-selected, 
 .custom-subtab_1_2-selected,
-.custom-subtab_1_3-selected
+.custom-subtab_1_3-selected,
+.custom-subtab_2_1, 
+.custom-subtab_2_2,
+.custom-subtab_2_3,
+.custom-subtab_2_1-selected, 
+.custom-subtab_2_2-selected,
+.custom-subtab_2_3-selected
  {
   background-color: #fff !important;
   font-family: Roboto !important;
@@ -381,7 +387,11 @@ body{
 
 .custom-subtab_1_1-selected, 
 .custom-subtab_1_2-selected,
-.custom-subtab_1_3-selected {
+.custom-subtab_1_3-selected,
+.custom-subtab_2_1-selected, 
+.custom-subtab_2_2-selected,
+.custom-subtab_2_3-selected
+ {
   font-weight: 500  !important;
   color: #66c2a5 !important;
   border-top-left-radius: 3px;

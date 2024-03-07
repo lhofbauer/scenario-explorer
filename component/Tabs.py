@@ -29,7 +29,7 @@ dropdown_component = html.Div(area_dropdown, id = 'dropdown_component')
 
 
 # - SUBTABS
-# -- Subtabs for the tab-1
+# -- Subtabs for tab-1
 subtabs_1 = html.Div ([
     dcc.Tabs([
         dcc.Tab(label = "Technology Mix", 
@@ -53,6 +53,31 @@ subtabs_1 = html.Div ([
     ], id = 'subtabs_1', value = 'subtab-1-1')
 ])
 
+# -- Subtabs for tab-2
+subtabs_2 = html.Div ([
+    dcc.Tabs([
+        dcc.Tab(label = "Technology Mix", 
+                        id = 'subtab-2-1',
+                        value = "subtab-2-1",
+                        className = 'custom-subtab_2_1',
+                        selected_className = 'custom-subtab_2_1-selected'
+                        ),
+        dcc.Tab(label = "Cost & Investment", 
+                        id = 'subtab-2-2',
+                        value = "subtab-2-2",
+                        className = 'custom-subtab_2_2',
+                        selected_className = 'custom-subtab_2_2-selected'
+                        ),
+        dcc.Tab(label = "Emissions", 
+                        id = 'subtab-2-3',
+                        value = "subtab-2-3",
+                        className = 'custom-subtab_2_3',
+                        selected_className = 'custom-subtab_2_3-selected'
+                        ),
+    ], id = 'subtabs_2', value = 'subtab-2-1')
+])
+
+
 # LAYOUT
 def tabs(figures : list):
     return html.Div(
@@ -66,7 +91,7 @@ def tabs(figures : list):
                         className = 'custom-tab_1',
                         selected_className = 'custom-tab_1-selected'
                         ),
-                dcc.Tab([dropdown_component],
+                dcc.Tab([subtabs_2],
                         label = "Local View", 
                         id = 'tab-2',
                         value = "tab-2",     
@@ -84,7 +109,7 @@ def tabs(figures : list):
             value="tab-1",
         ),
         #html.Div(area_dropdown, id = 'dropdown_component'),
-        html.Div(figures, id = "figure-area"),
+        html.Div([figures], id = "figure-area"),
     ], 
     id = 'tab_area'
 )
