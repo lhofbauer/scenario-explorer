@@ -64,7 +64,8 @@ app.layout = html.Div([
                 html.Div([Navbar.createNavbar(),
                        Sidebar.sidebar(),
                        Tabs.tabs([]),
-                       dcc.Store(id='scenario_store')
+                       dcc.Store(id='scenario_store'),
+                       dcc.Download(id="download_data")
                       ], id = 'content-container'),
                 Navbar.createFooter()])
 
@@ -424,9 +425,18 @@ def update_graphs(scenarios, tab, subtab, scen_options):
        
         glist = [("Information on everything to go here.<br><br><br><br><br>"
                  "The dashboard source code is Copyright (C) 2024 Leonhard Hofbauer, Yueh-Chin Lin, licensed under a MIT license and available here.")]
+    
+    
+    # options = [{'label':"Graph 1",
+    #             'value':"g1"
+    #             }]
+    # download =  dcc.Dropdown(options, value="",
+    #              id = 'download_dropdown',
+    #              clearable = True,
+    #              placeholder = "Download graph data"),
 
-
-    return dbc.Container(glist,
+    
+    return dbc.Container(glist,#+[download],
                          fluid = True,
                          style = {'background':'white'})
 
@@ -457,6 +467,19 @@ def update_heat_gen_maps(year, scenarios, scen_options):
             figonly=True)
 
     return fig
+
+
+
+# @callback(
+#     Output("download_data", "data"),
+#     Input("download_dropdown", "value"),
+#     prevent_initial_call=True,
+# )
+# def download(value):
+    
+#     return dcc.send_data_frame(df.to_csv, "data.csv")
+
+
 
 if __name__ == '__main__':
     app.run_server(host='127.0.0.1', port='8050', debug=True)
