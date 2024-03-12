@@ -3,11 +3,6 @@ import json
 from pathlib import Path
 import dash_bootstrap_components as dbc
 
-# SET LOADING ANIMTATION
-def loading(children):
-    return dcc.Loading(
-        id='loading',
-        children = children)
 
 
 appdir = str(Path(__file__).parent.parent.resolve())

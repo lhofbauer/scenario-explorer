@@ -20,13 +20,6 @@ config = {
     'scrollZoom': True
 }
 
-# SET LOADING ANIMTATION
-def loading(children):
-    return dcc.Loading(
-        id='loading',
-        children = children)
-
-
 # LOAD STYLE DATA
 palette = 'tol-light'
 continuous = False
@@ -74,11 +67,13 @@ app.layout = html.Div([
                        dcc.Store(id='scenario_store'),
                        dcc.Download(id="download_data")
                       ], id = 'content-container'),
-                Navbar.createFooter()])
+                Navbar.createFooter(),]
+                )
 
 
 
 # DEFINE CALLBACKS
+
 
 # updating levers if pre-defined scenario is chosen
 @callback(
@@ -242,9 +237,9 @@ def update_graphs(scenarios, tab, subtab, scen_options):
                         dbc.Col(html.Div(graph6)),
                         dbc.Col(html.Div(graph10)),
                     ], className='figure_row'),
-                        (dbc.Row([html.Div(yslider),
-                        dbc.Col(html.Div(graph2))],
-                     className='figure_row')),
+                dbc.Row([html.Div(yslider),
+                        dcc.Loading(dbc.Col(html.Div(graph2)))],
+                     className='figure_row'),
 
                  ]
            
