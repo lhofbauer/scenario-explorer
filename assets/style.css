@@ -2,6 +2,7 @@ body{
   background-color: #d6d6d6;
 }
 
+
 .title {
     font-weight: bold;
     font-family: Roboto;
@@ -104,7 +105,25 @@ body{
     color: #66c2a5;
   }
 
+#year_slider {
+  width: 300px;
+}
+
+#slider_container {
+  padding-top: 100px;
+  padding-left: 50px;
+  display: flex;
+  flex-direction: column;
+}
+
+.popover_lever {
+  width: auto;
+  height: 15px;
+  margin-left: 3px;
+}
+
 .facet_item_name {
+  display: flex;
   font-weight: 500;
   font-family: Roboto;
   font-size: 12px;

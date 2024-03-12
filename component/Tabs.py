@@ -3,6 +3,13 @@ import json
 from pathlib import Path
 import dash_bootstrap_components as dbc
 
+# SET LOADING ANIMTATION
+def loading(children):
+    return dcc.Loading(
+        id='loading',
+        children = children)
+
+
 appdir = str(Path(__file__).parent.parent.resolve())
 
 # STYLE 
@@ -56,13 +63,21 @@ subtabs_1 = html.Div ([
 
 
 # -- Search bar for local authorities filter embeded in Subtabs for tab-2
+local_auth_path = f'{appdir}/data/local_authority_code_mapping.json'
+
+with open(local_auth_path, "r", encoding="utf-8") as json_file:
+    local_authority_data = json.load(json_file)
+
+# --- Options for the dropdown
+local_auth_options = list(local_authority_data['name_code'].keys())
+
 button =  dbc.Button(
             "Select Local Authorities",
             id = "local_auth_search_button",
             n_clicks = 0,
         )
 
-local_auth_search =  dcc.Dropdown(['example1', 'example2'], 'example1',
+local_auth_search =  dcc.Dropdown(local_auth_options, local_auth_options[0],
                          id = 'local_auth_search',
                          clearable = False,
                          searchable = True,

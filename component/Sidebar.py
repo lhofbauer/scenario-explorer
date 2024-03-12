@@ -1,7 +1,9 @@
 from dash import Dash, html, dcc, callback, Output, Input
 import dash_bootstrap_components as dbc
 import pandas as pd
+from pathlib import Path
 
+appdir = str(Path(__file__).parent.parent.resolve())
 
 #CONTENT
 content_title = 'Scenario design'
@@ -15,6 +17,33 @@ content_lev_1_tooltip = 'This lever sets the year net-zero emissions are to be a
 content_lev_2 = 'Heat Pump Rollout'
 content_lev_2_tooltip = 'This lever contraints the rollout of heat pumps. [...]'
 
+
+#POPOVER FOR LEVERS
+
+class Popover():
+    def __init__(self, trigger):
+        self.trigger = trigger
+    
+    def create(self, popover_id, content):
+        self.children = content
+
+        return html.Div (
+            [
+                html.Img(
+                    src = '../assets/icons/question_popover.png',
+                    className = 'popover_lever', id = popover_id),
+                dbc.Popover(
+                    content, 
+                    target = popover_id, 
+                    body = True, 
+                    trigger = self.trigger)
+        ])
+    
+# - Create popover for levers
+lever1_Popover_object = Popover('hover')
+lever1_popover = lever1_Popover_object.create('lever1_popover1', content_lev_1_tooltip)
+lever2_Popover_object = Popover('hover')
+lever2_popover = lever2_Popover_object.create('lever1_popover2', content_lev_2_tooltip)
 
 #EXTRACT SCENARIOS AND LEVERS
 
@@ -51,12 +80,12 @@ def sidebar():
                          clearable = False,
                          placeholder = "No scenario chosen."),
             html.Div(levers_description, className = 'sidebar_description'),
-            html.Div(content_lev_1, className = 'facet_item_name',
+            html.Div([content_lev_1,lever1_popover], className = 'facet_item_name',
                      title = content_lev_1_tooltip),
             dcc.Slider(min = 2040, max = 2050, step = None, marks = lev1,
                        value = 2045,
                        id= 'nz_slider', className = 'slider'),
-            html.Div(content_lev_2, className = 'facet_item_name',
+            html.Div([content_lev_2, lever2_popover], className = 'facet_item_name',
                      title = content_lev_2_tooltip),
             dcc.Slider(min = 0, max = 1, step = None, marks = lev2, value = 0,
                        id= 'hp_slider', className = 'slider'),

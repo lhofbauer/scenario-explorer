@@ -20,6 +20,13 @@ config = {
     'scrollZoom': True
 }
 
+# SET LOADING ANIMTATION
+def loading(children):
+    return dcc.Loading(
+        id='loading',
+        children = children)
+
+
 # LOAD STYLE DATA
 palette = 'tol-light'
 continuous = False
@@ -220,21 +227,24 @@ def update_graphs(scenarios, tab, subtab, scen_options):
                 range_color=[0,1])
         
         marks ={y:str(y) for y in range(2025,2056,5)}
-        yslider = dcc.Slider(min = 2025, max = 2055, step = None, marks=marks,
+        yslider_popover_object = Sidebar.Popover('hover')
+        yslider_popover = yslider_popover_object.create('yslider1_popover', 
+                                                        'To be defined')
+        yslider = html.Div([   
+                    html.Div(['Years', yslider_popover], className = 'facet_item_name'),
+                    dcc.Slider(min = 2025, max = 2055, step = None, marks = marks,
                              value = 2050,
                              id= 'year_slider',
                              className = 'slider'),
+        ], id = 'slider_container')
         
         glist = [dbc.Row([
                         dbc.Col(html.Div(graph6)),
                         dbc.Col(html.Div(graph10)),
                     ], className='figure_row'),
-                 dbc.Row([
-                        dbc.Col(html.Div(yslider),width={'size':4,'offset':8})],
-                     className='figure_row'),
-                 dbc.Row([
+                        (dbc.Row([html.Div(yslider),
                         dbc.Col(html.Div(graph2))],
-                     className='figure_row'),
+                     className='figure_row')),
 
                  ]
            
@@ -290,8 +300,6 @@ def update_graphs(scenarios, tab, subtab, scen_options):
                 sex = 'Technologies'                             
                 )
         
-        
-
 
         glist = [dbc.Row([
                         dbc.Col(html.Div(graph8)),
