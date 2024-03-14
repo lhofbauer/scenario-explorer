@@ -146,7 +146,7 @@ def tabs(figures : list):
             value="tab-1",
         ),
         #html.Div(area_dropdown, id = 'dropdown_component'),
-        html.Div([figures], id = "figure-area"),
+        html.Div(figures, id = "figure-area"),
     ], 
     id = 'tab_area'
 )

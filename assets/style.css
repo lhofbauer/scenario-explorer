@@ -93,9 +93,43 @@ body{
     color: #A5A5A5
     }
 
+
+#chosen_scenario_dropdown, 
 #scenario_dropdown {
-  margin-bottom: 50px;
+  width: 100%;
+  margin-top:10px;
+  margin-bottom:10px;
+  padding-left: 5px;
+  padding-top: 3px;
+  padding-bottom: 3px;
 }
+
+#scenario_name_field {
+  width: 100%;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  padding: 5px;
+  font-size: 14px;
+  border: 1px solid #a5a5a5ff !important;
+  border-radius: 30px !important;
+}
+
+input::placeholder {
+  padding-left: 10px;
+}
+
+#submit_button {
+  background-color: #66c2a5;
+  width: 4rem;
+  height:4%;
+  color: white;
+  font-family:Roboto;
+  font-size:14px;
+  border: #A5A5A5;
+  border-radius: 30px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  }
 
 .facet_name {
     font-weight: 500;
@@ -134,14 +168,7 @@ body{
   margin-bottom: 10px;
 }
 
-#submit_button {
-  background-color: white;
-  color: black;
-  font-family:Roboto;
-  font-size:14px;
-  border: 2px solid #66c2a5;
-  border-radius: 8px;
-  }
+
 
 
 #dropdown_component {
