@@ -6,6 +6,7 @@ import plotly.express as px
 import json
 from component import Sidebar, Tabs, Barchart, Linechart, Hexmap, ClusterChart, Navbar
 from pathlib import Path
+import time
 
 # Get the absolute path of the parent directory containing the current script
 appdir = str(Path(__file__).parent.resolve())
@@ -65,6 +66,7 @@ app.layout = html.Div([
                        Sidebar.sidebar(),
                        Tabs.tabs([]),
                        dcc.Store(id='scenario_store'),
+                       dcc.Store(id='response_store'),
                        dcc.Download(id="download_data")
                       ], id = 'content-container'),
                 Navbar.createFooter(),]
@@ -105,6 +107,8 @@ def update_dropdown(nz, hp, scen):
 # update scenario list with new scenarios
 @callback(
     Output('chosen_scenario_dropdown', 'options'),
+    Output('scenario_creation_response','children'),
+    Output('response_store','data'),
     Input('submit_button','n_clicks'),
     State('chosen_scenario_dropdown', 'options'),
     State('nz_slider', 'value'),
@@ -112,17 +116,32 @@ def update_dropdown(nz, hp, scen):
     State('scenario_name_field', 'value'),
 )
 def update_scenario_list(count, scens, nz, hp, name):
-    
+    response = ''
     if name == '':
         name = 'Scenario '+str(count)
     exscen = [s['value'] for s in scens]
     if f'nz-{nz}_hp-{hp:02d}' not in exscen:    
+        response = 'Successful!'
         scens.append({'label': html.Span(children=name,
                                          style={'color': '#808080',
                                                 'font-size': '14px'}),
                       'value': f'nz-{nz}_hp-{hp:02d}'})
+    elif f'nz-{nz}_hp-{hp:02d}' in exscen and count > 0:
+        response = 'Already exists.' 
+        
+    return scens, response, response
+
+# the scenario creation response fades out
+@callback(
+    Output('scenario_creation_response','children', allow_duplicate = True),
+    Input('response_store','data'),
+    prevent_initial_call = True
+)
+def update_response(data):
+    if data != '':
+        time.sleep(5)
     
-    return scens
+    return ''
 
 # update chosen scenarios if dropdown changed
 @callback(
