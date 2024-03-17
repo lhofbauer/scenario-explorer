@@ -97,12 +97,12 @@ def GenericHexmap(id, df,  scenarios, techs=None, year= None, title=None,
             
             fig = px.choropleth(ftechmap,
                             geojson = geojson,
-                            locations = map_column,
+                            locations = map_column[:-2]+"NM",
                             color = "VALUE",
-                            featureidkey = "properties." + map_column,
+                            featureidkey = "properties." + map_column[:-2]+"NM",
                             projection = "mercator",
                             #color_continuous_scale="Emrld",
-                            #hover_name=loc_column[:-2]+"NM",
+                            #hover_name=map_column[:-2]+"NM",
                             #hover_data={loc_column:False},
                             )  
             gobj.append(fig)
@@ -121,8 +121,8 @@ def GenericHexmap(id, df,  scenarios, techs=None, year= None, title=None,
         fig.update_geos(visible=False,
                         lonaxis_range=[-7.5,17],
                         lataxis_range=[-3.5,27])
-        
-
+        print(ftechmap)
+        fig.update_traces(hovertemplate = "%{location}: %{z}")
         fig.update_coloraxes(colorbar_title=dict(text=zlabel),
                              cmin=range_color[0] if range_color else None,
                              cmax=range_color[1] if range_color else None)
@@ -148,9 +148,9 @@ def GenericHexmap(id, df,  scenarios, techs=None, year= None, title=None,
                 
                 fig = px.choropleth(ftechmap,
                                 geojson = geojson,
-                                locations = map_column,
+                                locations = map_column[:-2]+"NM",
                                 color = "VALUE",
-                                featureidkey = "properties." + map_column,
+                                featureidkey = "properties." + map_column[:-2]+"NM",
                                 projection = "mercator",
                                 #color_continuous_scale="Emrld",
                                 #hover_name=loc_column[:-2]+"NM",
@@ -174,12 +174,13 @@ def GenericHexmap(id, df,  scenarios, techs=None, year= None, title=None,
         fig.update_geos(visible=False,
                         lonaxis_range=[-7.5,17],
                         lataxis_range=[-3.5,27])
-
+        fig.update_traces(hovertemplate = "%{location}: %{z}")
         fig.update_coloraxes(colorbar_title=dict(text=zlabel),
                              #colorscale = ccm,
                              cmin=range_color[0] if range_color else None,
                              cmax=range_color[1] if range_color else None)
         fig.update_layout(height = len(scenarios) * 400)
+
     
     if figonly:
         return fig

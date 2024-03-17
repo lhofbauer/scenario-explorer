@@ -187,29 +187,36 @@ def collapse_dropdown(click):
     Input('scenario_store','data'),
     Input('tabs', 'value'),
     Input('subtabs_1','value'),
+    Input('subtabs_2','value'),
+    Input('local_auth_search','value'),
     State('chosen_scenario_dropdown', 'options')
 )
-def update_graphs(scenarios, tab, subtab, scen_options):
+def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
     
     scen_naming = {s['value']:s['label']['props']['children'] for s in scen_options}
     
     scenario = scenarios[0]
+    if isinstance(lads,str):
+        lads = [lads]
+        
     # Create graphs for the chosen tab
-    if tab == 'tab-1' and subtab == 'subtab-1-1':
+    if tab == 'tab-1' and subtab_1 == 'subtab-1-1':
         
         df_gen = pd.read_csv(f'{appdir}/data/plot_data_01.csv')
         df_cost = pd.read_csv(f'{appdir}/data/plot_data_03.csv')
         df_inst = pd.read_csv(f'{appdir}/data/plot_data_09.csv')
         df_gen_loc = pd.read_csv(f'{appdir}/data/plot_data_02.csv')
         
-
-        
+        graph1_popover_object = Sidebar.Popover('hover')
+        graph1_popover =graph1_popover_object.create('t1-1_graph1_popover', 
+                                                        'This is an info text test test. This is an info texttesttest. This is an info text. This is an info text. This is an info text. This is an info text. This is an info text. This is an info text. This is an info text. This is an info text. This is an info text. This is an info text. ')
+        year = 2050
         graph6 = Barchart.ScenCompGenBarchart(
                 id = "heat_gen_cost_comp",
-                title="te",
+                title=None,#f"Heat generation in {year}",,
                 df_gen = df_gen,
                 df_cost = df_cost,
-                year = 2050,
+                year = year,
                 scenarios = scenarios,
                 naming = scen_naming,
                 colormap = cdm)
@@ -217,7 +224,7 @@ def update_graphs(scenarios, tab, subtab, scen_options):
         graph10 = Linechart.GenericLinechart(
                 id = 'hp_installations',
                 df = df_inst,
-                title="Heat pump installations (domestic)",
+                title=None,#"Heat pump installations (domestic)",
                 x="YEAR",
                 y="VALUE",
                 category="RUN",
@@ -253,8 +260,9 @@ def update_graphs(scenarios, tab, subtab, scen_options):
         ], id = 'slider_container')
         
         glist = [dbc.Row([
-                        dbc.Col(html.Div(graph6)),
-                        dbc.Col(html.Div(graph10)),
+                        dbc.Col([dbc.Stack([f"Heat generation in {year}",graph1_popover],
+                                          direction="horizontal"),graph6]),
+                        dbc.Col(html.Div(["Heat pump installations (domestic)",graph10])),
                     ], className='figure_row'),
                 dbc.Row([html.Div(yslider),
                         dcc.Loading(dbc.Col(html.Div(graph2)))],
@@ -262,13 +270,31 @@ def update_graphs(scenarios, tab, subtab, scen_options):
 
                  ]
            
-    elif tab == 'tab-1' and subtab == 'subtab-1-2':
+    elif tab == 'tab-1' and subtab_1 == 'subtab-1-2':
         
         files = ["plot_data_04_net.csv","plot_data_04_dh.csv",
                  "plot_data_04_h2.csv","plot_data_04_build.csv"]
         df_inv = [pd.read_csv(f'{appdir}/data/'+ f) for f in files]
         df_cost = pd.read_csv(f'{appdir}/data/plot_data_03.csv')
+        df_hcost = pd.read_csv(f'{appdir}/data/plot_data_11.csv',
+                               index_col=["RUN","REGION","YEAR"])
+        
+        # normalize with GB average (except GB values)
+        df_hcost[~df_hcost.index.get_level_values("REGION")
+                 .str.startswith("GB")] = (df_hcost[~df_hcost
+                                                    .index.get_level_values("REGION")
+                                                    .str.startswith("GB")]
+                                                    /df_hcost.xs((scenarios[0],
+                                                                  "GB"),
+                                                                 level=(0,1)))
+        df_hcost_gb = df_hcost.xs("GB",level=1)
+        df_hcost_gb = df_hcost_gb/df_hcost_gb.xs((scenarios[0],2015),level=(0,1)).squeeze()
+        df_hcost_gb = df_hcost_gb.reset_index()
+        df_hcost = df_hcost.reset_index()
 
+                                            
+                                            
+                                                                                      
         graph8 = Barchart.ScenCompCostBarchart(
                 id = "heat_cost_comp",
                 df_cost = df_cost,
@@ -286,6 +312,29 @@ def update_graphs(scenarios, tab, subtab, scen_options):
                 scenarios = scenarios,
                 naming = scen_naming)
         
+        graph3 = Hexmap.GenericHexmap(
+                id = "hcost_maps",
+                df = df_hcost,
+                title = None,
+                year = 2050,
+                zlabel = "Annual heating<br>cost per property<br>(rel. to avg.)",
+                scenarios = scenarios,
+                naming=scen_naming,
+                range_color=[0.8,1.2])
+        
+        graph4 = Linechart.GenericLinechart(
+                id = 'hcost_path',
+                df = df_hcost_gb,
+                title="Heating cost",
+                x="YEAR",
+                y="VALUE",
+                category="RUN",
+                scenarios = scenarios,
+                naming=scen_naming,
+                x_label = "Year",
+                y_label = "Cost (normalized)",
+                l_label = "Scenarios"                            
+                )
         
         graph1 = Barchart.LongFormBarchart(
                 'heat_generation_chart',
@@ -301,7 +350,7 @@ def update_graphs(scenarios, tab, subtab, scen_options):
                 )                             
         
        
-        graph3 = Barchart.LongFormBarchart(
+        graph2 = Barchart.LongFormBarchart(
                 'heat_generation_cost',
                 f'{appdir}/data/plot_data_03.csv',
                 "Historical Data (2015) and Prediction",
@@ -316,18 +365,26 @@ def update_graphs(scenarios, tab, subtab, scen_options):
         
 
         glist = [dbc.Row([
-                        dbc.Col(html.Div(graph8)),
+                        dbc.Col(html.Div(["Title 1",graph8])),
                         dbc.Col(html.Div(graph9)),
                     ], className='figure_row'),
+                dbc.Row([
+                            dbc.Col(html.Div(graph3))
+                        ], className='figure_row'),
+                dbc.Row(
+                   [
+                       dbc.Col(html.Div(graph4)),
+                       dbc.Col(html.Div(graph2)),
+                   ], className='figure_row'),
                  
                  dbc.Row(
                     [
                         dbc.Col(html.Div(graph1)),
-                        dbc.Col(html.Div(graph3)),
+                        dbc.Col(html.Div(graph2)),
                     ], className='figure_row'),
                 ]
         
-    elif tab == 'tab-1' and subtab == 'subtab-1-3':
+    elif tab == 'tab-1' and subtab_1 == 'subtab-1-3':
         
         df_em = pd.read_csv(f'{appdir}/data/plot_data_10.csv')
         df_em_loc = pd.read_csv(f'{appdir}/data/plot_data_05.csv')
@@ -371,66 +428,47 @@ def update_graphs(scenarios, tab, subtab, scen_options):
         #                  style={'display': 'flex', 'flexDirection': 'row'})]
         
 
-    elif tab == 'tab-2':
+    
+    elif tab == 'tab-2' and subtab_2 == 'subtab-2-1':
+        
         df_gen = pd.read_csv(f'{appdir}/data/plot_data_01.csv')
         df_cost = pd.read_csv(f'{appdir}/data/plot_data_03.csv')
-        df_inst = pd.read_csv(f'{appdir}/data/plot_data_09.csv')
-        df_gen_loc = pd.read_csv(f'{appdir}/data/plot_data_02.csv')
+        df_inst_loc = pd.read_csv(f'{appdir}/data/plot_data_09l.csv')
+        df_gen_loc = pd.read_csv(f'{appdir}/data/plot_data_02n.csv')
         
         
         
-        graph6 = Barchart.ScenCompGenBarchart(
-                id = "heat_gen_cost_comp",
+        graph6 = Barchart.ScenLocalCompGenBarchart(
+                id = "heat_gen_cost_local_comp",
                 title="te",
-                df_gen = df_gen,
-                df_cost = df_cost,
+                df_gen = df_gen_loc,
                 year = 2050,
+                lads = lads,
+                y_label='Fraction supplied by technology (-)',
                 scenarios = scenarios,
                 naming = scen_naming,
                 colormap = cdm)
         
         graph10 = Linechart.GenericLinechart(
-                id = 'hp_installations',
-                df = df_inst,
+                id = 'hp_installations_loc',
+                df = df_inst_loc,
                 title="Heat pump installations (domestic)",
                 x="YEAR",
                 y="VALUE",
                 category="RUN",
                 scenarios = scenarios,
+                lads = lads,
                 naming=scen_naming,
                 x_label = "Year",
                 y_label = "Number of HPs installed per year (millions)",
-                l_label = "Scenarios"                            
+                l_label = None                            
                 )
-        graph2 = Hexmap.GenericHexmap(
-                id = "heat_generation_map",
-                df = df_gen_loc,
-                title = None,
-                zlabel = "Fraction<br>supplied by<br>technology (-)",
-                techs = ["Air-source HP", "Heat interface unit",
-                 "Electric resistance heater","Biomass boiler",
-                 "H2 boiler"],
-                year = 2050,
-                scenarios = scenarios,
-                naming=scen_naming,
-                range_color=[0,1])
-        
-        marks ={y:str(y) for y in range(2025,2056,5)}
-        yslider = dcc.Slider(min = 2025, max = 2055, step = None, marks=marks,
-                             value = 2050,
-                             id= 'year_slider',
-                             className = 'slider'),
         
         glist = [dbc.Row([
                         dbc.Col(html.Div(graph6)),
                         dbc.Col(html.Div(graph10)),
                     ], className='figure_row'),
-                 dbc.Row([
-                        dbc.Col(html.Div(yslider),width={'size':4,'offset':8})],
-                     className='figure_row'),
-                 dbc.Row([
-                        dbc.Col(html.Div(graph2))],
-                     className='figure_row'),
+
 
                  ]
         # graph7 = ClusterChart.WideFromBarCharts(
@@ -442,6 +480,13 @@ def update_graphs(scenarios, tab, subtab, scen_options):
         #                                     x_label = "year", y_label = 'watt', 
         #                                     scenario = scenario, sex  = 'Technologies')
         # glist = [graph7_cluster]
+    elif tab == 'tab-2' and subtab_2 == 'subtab-2-2':
+        glist=[]
+        pass
+    elif tab == 'tab-2' and subtab_2 == 'subtab-2-3':
+        glist=[]
+        pass
+        
         
     elif tab == 'tab-3':
        
@@ -457,7 +502,7 @@ def update_graphs(scenarios, tab, subtab, scen_options):
     #              clearable = True,
     #              placeholder = "Download graph data"),
 
-    
+
     return dbc.Container(glist,#+[download],
                          fluid = True,
                          style = {'background':'white'})

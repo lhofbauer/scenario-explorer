@@ -227,7 +227,7 @@ def ScenCompGenBarchart(id, df_gen, df_cost, year, title, naming,
                              legendgrouptitle=dict(text="System cost")),
                     )
 
-    fig.update_layout(title=f"Heat generation in {year}",
+    fig.update_layout(title=title,
                         legend=dict(orientation="v",
                                     title=None,
                                     x=1.2,
@@ -249,6 +249,7 @@ def ScenCompGenBarchart(id, df_gen, df_cost, year, title, naming,
                            tickmode="sync",
                        ),
                        xaxis_title=None,
+                       margin=dict(l=20, r=20, t=10, b=20),
                        )
     fig.update_xaxes(tickangle=45)     
 
@@ -258,23 +259,73 @@ def ScenCompGenBarchart(id, df_gen, df_cost, year, title, naming,
                   figure = fig,
                   config={'displaylogo':False})
     )
+
+def ScenLocalCompGenBarchart(id, df_gen, lads, year, title, naming,
+                        x_label = None, y_label = None, 
+                        scenarios = None, colormap = None,
+                        ):
+
+    by = df_gen.loc[(df_gen["YEAR"]==2015)&
+                    (df_gen["RUN"]=="nz-2040_hp-00")&
+                    (df_gen["REGION"].isin(lads))]
+    by.loc[:,"RUN"] = "Base year"
     
-# FIXME: deprecated, to be deleted
-def WideFormBarchart(id, path, title, xaxis, cat_position, 
-                     x_label = None, y_label = None, 
-                     scenario = None, sex = None):
-    raw_df = pd.read_csv(path)
-    df = raw_df[raw_df['RUN'] == scenario] if scenario else raw_df
-    categories = df.columns.to_list()[cat_position:]
-    fig = px.bar(df, x = xaxis, y = categories, 
-                 color_discrete_sequence=px.colors.qualitative.Alphabet)
-    fig.layout = dict(xaxis = dict(type = "category"), barmode = 'stack', title = title)
+    df_gen = pd.concat([by,
+                        df_gen.loc[(df_gen["YEAR"]==year)]])
+    
+    df_gen = df_gen[df_gen['RUN'].isin(scenarios+["Base year"])]
+    df_gen = df_gen[df_gen['REGION'].isin(lads)]
+
+    df_gen = df_gen.drop("YEAR", axis=1)
+    
+    df_gen = df_gen.replace(naming)
+    
+    df_gen["RUN"] = df_gen["RUN"] + "<br>" + df_gen["REGION"]
+    
+    fig = px.bar(df_gen,x="RUN",y="VALUE",color="TECHNOLOGY",
+                 color_discrete_map=colormap)
+    # fig.update_traces(overwrite=False, legendgroup="tech",
+    #                   legendgrouptitle_text="Technology")
+
+    fig.add_vline(
+        x=1*(len(lads)-1)+0.5,
+        line_dash="dot",
+        line_color="black"
+        )
+
+    
+    #fig.layout = dict(xaxis = dict(type = "category"), barmode = 'stack', title = title)
     fig.update_layout(paper_bgcolor = 'white', plot_bgcolor = 'white', 
-                      legend_title_text = sex, legend_tracegroupgap = 5)
-    fig.update_xaxes(title_text = x_label)
+                      legend_title_text = "Technology", legend_tracegroupgap = 5,
+                      margin=dict(l=20, r=20, t=10, b=20))
+    fig.update_xaxes(title_text = x_label,
+                     tickangle=45)
     fig.update_yaxes(title_text = y_label)
-    
+
+                     
     return html.Div(
         dcc.Graph(id = id, 
-                  figure = fig)
+                  figure = fig,
+                  config={'displaylogo':False})
     )
+
+    
+# FIXME: deprecated, to be deleted
+# def WideFormBarchart(id, path, title, xaxis, cat_position, 
+#                      x_label = None, y_label = None, 
+#                      scenario = None, sex = None):
+#     raw_df = pd.read_csv(path)
+#     df = raw_df[raw_df['RUN'] == scenario] if scenario else raw_df
+#     categories = df.columns.to_list()[cat_position:]
+#     fig = px.bar(df, x = xaxis, y = categories, 
+#                  color_discrete_sequence=px.colors.qualitative.Alphabet)
+#     fig.layout = dict(xaxis = dict(type = "category"), barmode = 'stack', title = title)
+#     fig.update_layout(paper_bgcolor = 'white', plot_bgcolor = 'white', 
+#                       legend_title_text = sex, legend_tracegroupgap = 5)
+#     fig.update_xaxes(title_text = x_label)
+#     fig.update_yaxes(title_text = y_label)
+    
+#     return html.Div(
+#         dcc.Graph(id = id, 
+#                   figure = fig)
+#     )

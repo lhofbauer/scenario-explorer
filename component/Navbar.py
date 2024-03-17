@@ -3,7 +3,7 @@ from dash import html
 
 #CONTENT
 navbar_title = 'ENERGY TRANSITION SCENARIO EXPLORER'
-footer_content = 'Developed under an EPSRC-funded project at UCL| [...]'
+footer_content = 'Developed at UCL funded by EPSRC (EP/X525649/1)| [...]'
 
 
 def createNavbar():
