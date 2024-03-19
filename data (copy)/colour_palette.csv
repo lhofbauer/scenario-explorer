@@ -1,0 +1,35 @@
+"PALETTE","PC_CODE","COLOUR_CODE","COLOUR_NAME"
+"tol-muted",0,"#CC6677","indigo"
+"tol-muted",1," #332288","cyan"
+"tol-muted",2," #DDCC77","teal"
+"tol-muted",3," #117733","green"
+"tol-muted",4," #88CCEE","olive"
+"tol-muted",5," #882255","sand"
+"tol-muted",6," #44AA99","rose"
+"tol-muted",7," #999933","wine"
+"tol-muted",8," #AA4499","purple"
+"tol-muted",9," #DDDDDD","pale grey"
+,,,
+"tol-light",0,"#77AADD","light blue"
+"tol-light",1,"#EE8866","light cyan"
+"tol-light",2,"#EEDD88","mint"
+"tol-light",3,"#FFAABB","pear"
+"tol-light",4,"#99DDFF","olive"
+"tol-light",5,"#44BB99","light yellow"
+"tol-light",6,"#BBCC33","orange"
+"tol-light",7,"#AAAA00","pink"
+"tol-light",8,"#DDDDDD","pale grey"
+"tol-light",9,"#DDDDDD","pale grey"
+,,,
+"tol-inc",0,"#CEFFFF",
+"tol-inc",1,"#C6F7D6",
+"tol-inc",2,"#A2F49B",
+"tol-inc",3,"#BBE453",
+"tol-inc",4,"#D5CE04",
+"tol-inc",5,"#E7B503",
+"tol-inc",6,"#F19903",
+"tol-inc",7,"#F6790B",
+"tol-inc",8,"#F94902",
+"tol-inc",9,"#E40515",
+"tol-inc",10,"#A80003",
+"tol-inc",-1,"#888888",

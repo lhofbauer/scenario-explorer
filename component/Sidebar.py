@@ -6,17 +6,39 @@ from pathlib import Path
 appdir = str(Path(__file__).parent.parent.resolve())
 
 #CONTENT
-content_title = 'Scenario design'
+content_title = 'Scenarios toolbar'
 content_description = 'Create and choose scenarios to display below.'
-content_facet_1 = 'Create Scenarios'
+content_facet_1 = 'Choose Scenarios to display'
 dropdown_description = 'Choose a pre-defined or default scenario as starting point.'
 levers_description = 'Adjust the scenario by moving the scenario levers.'
-content_facet_2 = 'Choose Scenarios to display'
+content_facet_2 = 'Customize Scenarios'
 content_lev_1 = 'Net-zero Target'
 content_lev_1_tooltip = 'This lever sets the year net-zero emissions are to be achieved in the UK.'
 content_lev_2 = 'Heat Pump Rollout'
-content_lev_2_tooltip = 'This lever contraints the rollout of heat pumps. [...]'
-
+content_lev_2_tooltip = ('This lever customizes the rollout of domestic heat pumps.'
+                         ' The "Fast" option assumes a roll out'
+                         ' following government targets. The "Limited"'
+                         ' option assumes a limit of 150k installations per year'
+                         'in 2030 and 400k in 2060.')
+content_lev_3 = 'District Heating'
+content_lev_3_tooltip = ('This lever customizes the rollout of district heating networks.'
+                         ' The "Cost-optimal" option assumes district heating is built'
+                         ' where cost-optimal. The "Limited"'
+                         ' option assumes a no additional district heating'
+                         ' networks are built.')
+content_lev_4 = 'Hydrogen'
+content_lev_4_tooltip = ('This lever customizes the potential use of hydrogen'
+                         ' for heating. The "Cost-optimal" option assumes'
+                         ' hydrogen is only used where cost-optimal. The'
+                         ' "Forced" option assumes 10% and 20% of demand is met by'
+                         ' hydrogen boilers by 2040 and 2050, respectively.')
+content_lev_5 = 'Local pledges'
+content_lev_5_tooltip = ('This lever customizes to what extent local authority net-zero'
+                         ' pledges are achieved. The "Not implemented" option assumes'
+                         ' pledges are not specifically followed if not aligned'
+                         ' with the national target. The "Implemented"'
+                         ' option assumes the net-zero target years based'
+                         ' on local authority pledges are achieved.')
 
 #POPOVER FOR LEVERS
 
@@ -41,17 +63,23 @@ class Popover():
     
 # - Create popover for levers
 lever1_Popover_object = Popover('hover')
-lever1_popover = lever1_Popover_object.create('lever1_popover1', content_lev_1_tooltip)
+lever1_popover = lever1_Popover_object.create('lever1_popover', content_lev_1_tooltip)
 lever2_Popover_object = Popover('hover')
-lever2_popover = lever2_Popover_object.create('lever1_popover2', content_lev_2_tooltip)
+lever2_popover = lever2_Popover_object.create('lever2_popover', content_lev_2_tooltip)
+lever3_Popover_object = Popover('hover')
+lever3_popover = lever3_Popover_object.create('lever3_popover', content_lev_3_tooltip)
+lever4_Popover_object = Popover('hover')
+lever4_popover = lever4_Popover_object.create('lever4_popover', content_lev_4_tooltip)
+lever5_Popover_object = Popover('hover')
+lever5_popover = lever5_Popover_object.create('lever5_popover', content_lev_5_tooltip)
 
 #EXTRACT SCENARIOS AND LEVERS
 
 # FIXME: define these scenarios in a data file and load from the file
 predef_scenarios = [{'label': 'Base net-zero scenario',
-                     'value':'nz-2045_hp-00'},
+                     'value':'nz-2050_hp-00_dh-00_lp-00_h2-01_UK|LA|SO'},
                     {'label': 'High ambition scenario',
-                     'value':'nz-2045_hp-01'}]
+                     'value':'nz-2045_hp-00_dh-00_lp-01_h2-00_UK|LA|SO'}]
 # create list of dropdown options including style
 options = [{'label':html.Span(d['label'], style={'color': '#808080',
                                           'font-size': '14px'}),
@@ -59,11 +87,16 @@ options = [{'label':html.Span(d['label'], style={'color': '#808080',
             } for d in predef_scenarios]
 
 # FIXME: test levers, to be updated and probably loaded from file
-lev1 = {2040:"2040",
-        2045:"2045",
+lev1 = {2045:"2045",
         2050:"2050"}
-lev2 = {0:"No limitation",
-        1:"Constraint"}
+lev2 = {0:"Fast",
+        1:"Limited"}
+lev3 = {0:"Cost-optimal",
+        1:"Limited"}
+lev4 = {0:"Cost-optimal",
+        1:"Enforced"}
+lev5 = {0:"Not implemented",
+        1:"Implemented"}
 
 #LAYOUT
 def sidebar():
@@ -74,21 +107,39 @@ def sidebar():
             html.P(content_description, className = 'sidebar_description'),
             html.Br(),
             html.Div(content_facet_1, className = 'facet_name'),
+            dcc.Dropdown(options, predef_scenarios[0]['value'],
+                         id = 'chosen_scenario_dropdown',
+                         clearable = False,
+                         searchable = False,
+                         multi = True,
+                         placeholder = "No scenario chosen."),
+            html.Br(),
+            html.Div(content_facet_2, className = 'facet_name'),
             html.Div(dropdown_description, className = 'sidebar_description'),
             dcc.Dropdown(options, predef_scenarios[0]['value'],
                          id = 'scenario_dropdown',
                          clearable = False,
                          placeholder = "No scenario chosen."),
             html.Div(levers_description, className = 'sidebar_description'),
-            html.Div([content_lev_1,lever1_popover], className = 'facet_item_name',
-                     title = content_lev_1_tooltip),
-            dcc.Slider(min = 2040, max = 2050, step = None, marks = lev1,
-                       value = 2045,
+            html.Br(),
+            html.Div([content_lev_1,lever1_popover], className = 'facet_item_name'),
+            dcc.Slider(min = 2045, max = 2050, step = None, marks = lev1,
+                       value = 2050,
                        id= 'nz_slider', className = 'slider'),
-            html.Div([content_lev_2, lever2_popover], className = 'facet_item_name',
-                     title = content_lev_2_tooltip),
+            html.Div([content_lev_2, lever2_popover], className = 'facet_item_name'),
             dcc.Slider(min = 0, max = 1, step = None, marks = lev2, value = 0,
                        id= 'hp_slider', className = 'slider'),
+            html.Div([content_lev_3,lever3_popover], className = 'facet_item_name'),
+            dcc.Slider(min = 0, max = 1, step = None, marks = lev3,
+                       value = 0,
+                       id= 'dh_slider', className = 'slider'),
+            html.Div([content_lev_4,lever4_popover], className = 'facet_item_name'),
+            dcc.Slider(min = 0, max = 1, step = None, marks = lev4,
+                       value = 1,
+                       id= 'h2_slider', className = 'slider'),
+            html.Div([content_lev_5, lever5_popover], className = 'facet_item_name'),
+            dcc.Slider(min = 0, max = 1, step = None, marks = lev5, value = 0,
+                       id= 'lp_slider', className = 'slider'),            
             html.Br(),
             dcc.Input(id='scenario_name_field', type='text', value='',
                       placeholder = 'Scenario name'),
@@ -96,15 +147,7 @@ def sidebar():
                         children='Create'),
                       html.Span('', id = 'scenario_creation_response')],
                       style = {'display':'flex', 'align-items':'center'}),
-            html.Br(),
-            html.Br(),
-            html.Div(content_facet_2, className = 'facet_name'),
-            dcc.Dropdown(options, predef_scenarios[0]['value'],
-                         id = 'chosen_scenario_dropdown',
-                         clearable = False,
-                         searchable = False,
-                         multi = True,
-                         placeholder = "No scenario chosen."),
+
             # dcc.Slider(min=2040, max=2050, step=None,marks=lev1,value=2050,
             #            tooltip={'template':'Net-zero target for the UK to be achieved in {value}.',
             #                     'placement':'bottom'}),

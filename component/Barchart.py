@@ -37,7 +37,7 @@ def LongFormBarchart(id, path, title, x, y, category,
 
 def ScenCompInvBarchart(id, df_inv, naming, title=None,
                      x_label = None, y_label = None, z_label=None,
-                     scenarios = None):
+                     scenarios = None, lads = None):
     
     gobj = list()
     titles = ["Networks","District heating",
@@ -47,7 +47,10 @@ def ScenCompInvBarchart(id, df_inv, naming, title=None,
         df = df.groupby("RUN",as_index=False).sum()
         df = df[df['RUN'].isin(scenarios)]
         df = df.replace(naming)
-        
+        if lads:
+            df = df[df['REGION'].isin(lads)]
+            df["RUN"] = df["RUN"] + "<br>" + df["REGION"]
+            
         fig = px.bar(df,x="RUN",y="VALUE")#color="TECHNOLOGY"
         gobj.append(fig)
             
@@ -93,7 +96,7 @@ def ScenCompCostBarchart(id, df_cost, year, scenarios, naming, title=None,
     # cost in early years in scenarios with emission target)
     # using a scenario without emission target might be the best (?)
     by = df_cost.loc[(df_cost["YEAR"]==2015)&
-                    (df_cost["RUN"]=="nz-2040_hp-00")]
+                    (df_cost["RUN"]=="nz-2050_hp-00_dh-00_lp-00_h2-01_UK|LA|SO")]
     by.loc[:,"RUN"] = "Base year"
     df_cost = pd.concat([by,
                         df_cost.loc[(df_cost["YEAR"]==year)]])
@@ -144,7 +147,7 @@ def ScenCompGenBarchart(id, df_gen, df_cost, year, title, naming,
                         ):
 
     by = df_gen.loc[(df_gen["YEAR"]==2015)&
-                    (df_gen["RUN"]=="nz-2040_hp-00")]
+                    (df_gen["RUN"]=="nz-2050_hp-00_dh-00_lp-00_h2-01_UK|LA|SO")]
     by.loc[:,"RUN"] = "Base year"
     
     df_gen = pd.concat([by,
@@ -179,7 +182,7 @@ def ScenCompGenBarchart(id, df_gen, df_cost, year, title, naming,
     # cost in early years in scenarios with emission target)
     # using a scenario without emission target might be the best (?)
     # FIXME: pick appropriate scenario for base year
-    df_cost.loc[("Base year",year),:] = df_cost.loc[("nz-2040_hp-00",2015),:]
+    df_cost.loc[("Base year",year),:] = df_cost.loc[("nz-2050_hp-00_dh-00_lp-00_h2-01_UK|LA|SO",2015),:]
     df_cost = df_cost[df_cost.index.get_level_values('RUN').isin(scenarios+["Base year"])]
     
     df_cost = df_cost.rename(index=naming)
@@ -266,7 +269,7 @@ def ScenLocalCompGenBarchart(id, df_gen, lads, year, title, naming,
                         ):
 
     by = df_gen.loc[(df_gen["YEAR"]==2015)&
-                    (df_gen["RUN"]=="nz-2040_hp-00")&
+                    (df_gen["RUN"]=="nz-2050_hp-00_dh-00_lp-00_h2-01_UK|LA|SO")&
                     (df_gen["REGION"].isin(lads))]
     by.loc[:,"RUN"] = "Base year"
     

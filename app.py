@@ -81,24 +81,30 @@ app.layout = html.Div([
 @callback(
     Output('nz_slider', 'value'),
     Output('hp_slider','value'),
+    Output('dh_slider', 'value'),
+    Output('h2_slider','value'),
+    Output('lp_slider', 'value'),
     Input('scenario_dropdown', 'value')
 )
 def update_levers(scenario):
     
-    levers = scenario.split('_')
+    levers = scenario.split('_')[:-1]
     levers = {l.split('-')[0]:int(l.split('-')[1]) for l in levers}
-    return levers["nz"], levers["hp"]
+    return levers["nz"], levers["hp"], levers["dh"], levers["h2"], levers["lp"]
 
 # updating scenario dropdown style if levers are changed
 @callback(
     Output('scenario_dropdown','style'),
     Input('nz_slider', 'value'),
     Input('hp_slider','value'),
-    State('scenario_dropdown','value')
+    Input('dh_slider', 'value'),
+    Input('h2_slider','value'),
+    Input('lp_slider', 'value'),
+    Input('scenario_dropdown','value')
 )
-def update_dropdown(nz, hp, scen):
+def update_dropdown(nz, hp, dh, h2, lp, scen):
     # if levers moved, grey out dropdown
-    scenario = f'nz-{nz}_hp-{hp:02d}'
+    scenario = f'nz-{nz}_hp-{hp:02d}_dh-{dh:02d}_lp-{lp:02d}_h2-{h2:02d}_UK|LA|SO'
     if scenario != scen:
         return {'background-color':'#d3d3d3'}
     
@@ -113,21 +119,27 @@ def update_dropdown(nz, hp, scen):
     State('chosen_scenario_dropdown', 'options'),
     State('nz_slider', 'value'),
     State('hp_slider','value'),
+    State('dh_slider', 'value'),
+    State('h2_slider','value'),
+    State('lp_slider', 'value'),
     State('scenario_name_field', 'value'),
 )
-def update_scenario_list(count, scens, nz, hp, name):
+def update_scenario_list(count, scens, nz, hp, dh, h2, lp, name):
     response = ''
     if name == '':
         name = 'Scenario '+str(count)
     exscen = [s['value'] for s in scens]
-    if f'nz-{nz}_hp-{hp:02d}' not in exscen:    
-        response = 'Successful!'
+
+    newscen = f'nz-{nz}_hp-{hp:02d}_dh-{dh:02d}_lp-{lp:02d}_h2-{h2:02d}_UK|LA|SO'
+    
+    if  newscen not in exscen:    
+        response = 'Scenario added to list.'
         scens.append({'label': html.Span(children=name,
                                          style={'color': '#808080',
                                                 'font-size': '14px'}),
-                      'value': f'nz-{nz}_hp-{hp:02d}'})
-    elif f'nz-{nz}_hp-{hp:02d}' in exscen and count > 0:
-        response = 'Already exists.' 
+                      'value': newscen})
+    elif newscen in exscen and count > 0:
+        response = 'Scenario already exists.' 
         
     return scens, response, response
 
@@ -139,7 +151,7 @@ def update_scenario_list(count, scens, nz, hp, name):
 )
 def update_response(data):
     if data != '':
-        time.sleep(5)
+        time.sleep(0.5)
     
     return ''
 
@@ -481,11 +493,89 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         #                                     scenario = scenario, sex  = 'Technologies')
         # glist = [graph7_cluster]
     elif tab == 'tab-2' and subtab_2 == 'subtab-2-2':
-        glist=[]
-        pass
+        
+        files = ["plot_data_04_loc_net.csv","plot_data_04_loc_dh.csv",
+                 "plot_data_04_loc_h2.csv","plot_data_04_loc_build.csv"]
+        df_inv = [pd.read_csv(f'{appdir}/data/'+ f) for f in files]
+        # df_cost = pd.read_csv(f'{appdir}/data/plot_data_03.csv')
+        df_hcost = pd.read_csv(f'{appdir}/data/plot_data_11n.csv')
+        
+        # normalize with GB average (except GB values)
+        
+        # df_hcost[~df_hcost.index.get_level_values("REGION")
+        #          .str.startswith("GB")] = (df_hcost[~df_hcost
+        #                                             .index.get_level_values("REGION")
+        #                                             .str.startswith("GB")]
+        #                                             /df_hcost.xs((scenarios[0],
+        #                                                           "GB"),
+        #                                                          level=(0,1)))
+        # df_hcost_gb = df_hcost.xs("GB",level=1)
+        # df_hcost_gb = df_hcost_gb/df_hcost_gb.xs((scenarios[0],2015),level=(0,1)).squeeze()
+        # df_hcost_gb = df_hcost_gb.reset_index()
+        # df_hcost = df_hcost.reset_index()
+
+                                            
+                                                                                 
+           
+        graph1 = Barchart.ScenCompInvBarchart(
+                id = "heat_inv_comp",
+                df_inv = df_inv,
+                title = "Annual investment requirements",
+                scenarios = scenarios,
+                lads = lads,
+                naming = scen_naming)
+        
+                                            
+        graph2 = Linechart.GenericLinechart(
+                id = 'hcost_path',
+                df = df_hcost,
+                title="Heating cost",
+                x="YEAR",
+                y="VALUE",
+                category="RUN",
+                scenarios = scenarios,
+                lads = lads,
+                naming=scen_naming,
+                x_label = "Year",
+                y_label = "Cost (normalized)",
+                l_label = None                           
+                )     
+        
+
+        
+
+        glist = [dbc.Row([
+                        dbc.Col(html.Div(["Title 1",graph1])),
+                        dbc.Col(html.Div(graph2)),
+                    ], className='figure_row'),
+                ]
+        
     elif tab == 'tab-2' and subtab_2 == 'subtab-2-3':
-        glist=[]
-        pass
+        
+        df_em = pd.read_csv(f'{appdir}/data/plot_data_10_loc.csv')
+        
+        graph1 = Linechart.GenericLinechart(
+                id = 'em_pathways',
+                df = df_em,
+                title="Emission pathways",
+                x="YEAR",
+                y="VALUE",
+                category="RUN",
+                scenarios = scenarios,
+                lads=lads,
+                naming=scen_naming,
+                x_label = "Year",
+                y_label = "CO2eq emissions (kt)",
+                l_label = "Scenarios"                            
+                )
+            
+        glist = [dbc.Row([
+                        dbc.Col(html.Div(graph1)),
+                    ], className='figure_row'),
+                 
+                ]
+        # html.Div([graph1, graph2, graph5],
+        #                  style={'display': 'flex', 'flexDirection': 'row'})]
         
         
     elif tab == 'tab-3':

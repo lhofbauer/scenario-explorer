@@ -366,7 +366,7 @@ if __name__ == "__main__":
                       usecols=["LAD23CD","LAD23NM"],
                       index_col=["LAD23CD"])
     mapping.index.name="REGION"
-    
+    mapping = mapping ["LAD23NM"]
     # Data analysis element 01 –  Heat generation data
     plot_data_01 = arrange_data(results=data,
                              var="TotalProductionByTechnologyAnnual",
@@ -408,8 +408,8 @@ if __name__ == "__main__":
     # save data
 
     plot_data_02n = plot_data_02.copy().reset_index()
-    plot_data_02n["REGION"] = plot_data_02n["REGION"].map(mapping["LAD23NM"])
-    plot_data_02n.to_csv(dpath+"plot_data_02n.csv")
+    plot_data_02n["REGION"] = plot_data_02n["REGION"].map(mapping)
+    plot_data_02n.to_csv(dpath+"plot_data_02n.csv",index=False)
        
     # Data analysis element 03 –  Cost structure data
     
@@ -502,19 +502,26 @@ if __name__ == "__main__":
                                   #xscale=xscale,
                                   filter_in={"TECHNOLOGY":d["fin"],
                                              "YEAR":[2023,2025,2030,
-                                                     2035,2040,2045]},
+                                                     2035,2040,2045,2050]},
                                   filter_out={"TECHNOLOGY":d["fout"]},
-                                  zgroupby=["RUN","TECHNOLOGY"],
+                                  zgroupby=["RUN","REGION","TECHNOLOGY"],
                                   cgroupby=d["gb"],
                                   naming = naming))
         
     for d,p in zip(plot_data_4,plots):
+
+        # convert to per year
+        d["VALUE"] =  d["VALUE"]/(2054-2023)
+
+        d.loc[:,"REGION"] = d.loc[:,"REGION"].map(mapping)
+        
+        # save data
+        d.to_csv(dpath+f"plot_data_04_loc_{p['short']}.csv")  
+        
         # convert to billions
         d["VALUE"] =  d["VALUE"]/1000
-        # convert to per year
-        d["VALUE"] =  d["VALUE"]/(2049-2023)
-        # save data
-        d.to_csv(dpath+f"plot_data_04_{p['short']}.csv")  
+        g = d.groupby(["RUN","TECHNOLOGY"]).sum()
+        g.to_csv(dpath+f"plot_data_04_{p['short']}.csv") 
 
 
 
@@ -545,11 +552,14 @@ if __name__ == "__main__":
     em = data[0]["AnnualEmissions"].copy()
     # divide by number of years in period to get average annual emissions
     em["VALUE"] = em["VALUE"].multiply(xscale,axis=0)
+    
     plot_data_10 = em.xs("UK",level="REGION")
+    plot_data_10_loc = em.reset_index()
+    plot_data_10_loc.loc[:,"REGION"] = plot_data_10_loc.loc[:,"REGION"].map(mapping)
     
     # save data
     plot_data_10.to_csv(dpath+"plot_data_10.csv")    
-    
+    plot_data_10_loc.to_csv(dpath+"plot_data_10_loc.csv",index=False)
     
     # Data analysis element 07 –  Local heat generation
     
@@ -641,7 +651,7 @@ if __name__ == "__main__":
                             )
     plot_data_09l = plot_data/techcaps.loc["ASHP"].mean()
     plot_data_09l = plot_data_09l.reset_index()
-    plot_data_09l["REGION"] = plot_data_09l["REGION"].map(mapping["LAD23NM"])
+    plot_data_09l["REGION"] = plot_data_09l["REGION"].map(mapping)
     # FIXME: this is a simplified calc, might need to improve
     plot_data_09 = (plot_data.groupby(["RUN","TECHNOLOGY","YEAR"]).sum()
                     /techcaps.loc["ASHP"].mean())
@@ -688,11 +698,12 @@ if __name__ == "__main__":
     dem["REGION"] = dem["REGION"].str[:9]
     dem = dem.groupby(["RUN","REGION","YEAR"]).sum()
     
-    
+    print(dem)
     # get number of properties
     pnum = pd.read_csv(dpath+'number_properties.csv',index_col=["REGION",
                                                                  "PROPERTY_TYPE",
                                                                  "YEAR"])
+    
     ptd = {"TE":"Terraced",
            "FL":"Flats",
            "DE":"Detached",
@@ -704,13 +715,13 @@ if __name__ == "__main__":
                      keys=scenarios, names=['RUN'])
 
 
-                                                               
+    print(pnum)                                                          
     cost = data[0]["DemandCost"].groupby(["RUN","REGION","FUEL","YEAR"]).sum()
     cost = cost[cost.index.get_level_values("FUEL").str.startswith(tuple(ecs))]
     cost = cost.reset_index().drop(["FUEL"],axis=1)
     cost["REGION"] = cost["REGION"].str[:9]
     cost = cost.groupby(["RUN","REGION","YEAR"]).sum()
-    
+    print(cost)
     # calculate cost per demand or property
     data[0]["CostPerDomHeat"] = (cost/dem)
     data[0]["CostPerDomHeat"] = data[0]["CostPerDomHeat"]* 10**6
@@ -723,10 +734,10 @@ if __name__ == "__main__":
     agg = agg.reset_index().set_index(["RUN","REGION","YEAR"])
     data[0]["CostPerDomProp"] = pd.concat([data[0]["CostPerDomProp"],
                                            agg])
-    
-    data[0]["CostPerDomProp"] = data[0]["CostPerDomProp"].multiply(xscale,
+    print(data[0]["CostPerDomProp"])
+    data[0]["CostPerDomProp"].loc[:,"VALUE"] = data[0]["CostPerDomProp"].loc[:,"VALUE"].multiply(xscale,
                                                                    axis=0)
-    data[0]["CostPerDomHeat"] = data[0]["CostPerDomHeat"].multiply(xscale,
+    data[0]["CostPerDomHeat"].loc[:,"VALUE"] = data[0]["CostPerDomHeat"].loc[:,"VALUE"].multiply(xscale,
                                                                    axis=0)
 
     plot_data_11 = data[0]["CostPerDomProp"]
@@ -739,6 +750,9 @@ if __name__ == "__main__":
     #                             .multiply(gdhi["2021"],level=1,axis=0))
     
     
-
+    
     # save data
-    plot_data_11.to_csv(dpath+"plot_data_11.csv")       
+    plot_data_11.to_csv(dpath+"plot_data_11.csv")
+
+    plot_data_11.loc[:,"REGION"] = plot_data_11.loc[:,"REGION"].map(mapping)
+    plot_data_11.to_csv(dpath+"plot_data_11n.csv")      
