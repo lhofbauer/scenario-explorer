@@ -76,7 +76,18 @@ app.layout = html.Div([
 
 # DEFINE CALLBACKS
 
-
+# limiting number of chosen scenarios
+# @app.callback(
+#     Output("chosen_scenario_dropdown", component_property="options"),
+#     Input("chosen_scenario_dropdown", component_property="value"),
+#     State("chosen_scenario_dropdown", component_property="options"),
+# )
+# def update_scenario_dropdown_options(scenarios, options):
+#     if len(scenarios) > 3:
+#         return [s for s in options if s["value"] in scenarios]
+#     else:
+#         return OPTIONS
+    
 # updating levers if pre-defined scenario is chosen
 @callback(
     Output('nz_slider', 'value'),
@@ -162,7 +173,6 @@ def update_response(data):
 )
 def update_scenario(scens):
     
-    # FIXME: currently just taking the first scenario, to be updated
     if isinstance(scens,str):
         scenarios = [scens]
     else:
@@ -211,6 +221,8 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
     if isinstance(lads,str):
         lads = [lads]
         
+    hover_popover_object = Sidebar.Popover('hover')  
+      
     # Create graphs for the chosen tab
     if tab == 'tab-1' and subtab_1 == 'subtab-1-1':
         
@@ -219,10 +231,32 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         df_inst = pd.read_csv(f'{appdir}/data/plot_data_09.csv')
         df_gen_loc = pd.read_csv(f'{appdir}/data/plot_data_02.csv')
         
-        graph1_popover_object = Sidebar.Popover('hover')
-        graph1_popover =graph1_popover_object.create('t1-1_graph1_popover', 
-                                                        'This is an info text test test. This is an info texttesttest. This is an info text. This is an info text. This is an info text. This is an info text. This is an info text. This is an info text. This is an info text. This is an info text. This is an info text. This is an info text. ')
         year = 2050
+        # - Create popover for graph titles
+        content_gencomp_tooltip = ("This graph shows the heat generation in"
+                                   " domestic and non-domestic properties by"
+                                   " technology in the base years (2015-2020)"
+                                   f" and for each scenario in {year}."
+                                   " It also shows the total energy system cost"
+                                   " (for meeting energy demands of the"
+                                   " building sector, including other"
+                                   " electricity and gas demand).")
+        content_hpinst_tooltip = ("This graph shows the number of heat pumps"
+                                   " installed annually in domestic properties"
+                                   " for each scenario.")
+        content_genmap_tooltip = ("These hexmaps show the fraction of heat demand"
+                                   " met by the most common technologies (columns)"
+                                   " for all scenarios (rows) in each"
+                                   " local authority in Great Britain. Hover"
+                                   " over a hexagon to see the name of the local"
+                                   " authority.")
+        
+
+        gencomp_popover = hover_popover_object.create('t1-1_gencomp_popover', content_gencomp_tooltip,'popover_figure')
+        hpinst_popover = hover_popover_object.create('t1-1_hpinst_popover', content_hpinst_tooltip,'popover_figure')
+        genmap_popover = hover_popover_object.create('t1-1_genmap_popover', content_genmap_tooltip,'popover_figure')
+
+
         graph6 = Barchart.ScenCompGenBarchart(
                 id = "heat_gen_cost_comp",
                 title=None,#f"Heat generation in {year}",,
@@ -236,7 +270,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         graph10 = Linechart.GenericLinechart(
                 id = 'hp_installations',
                 df = df_inst,
-                title=None,#"Heat pump installations (domestic)",
+                title=None,
                 x="YEAR",
                 y="VALUE",
                 category="RUN",
@@ -262,28 +296,70 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         marks ={y:str(y) for y in range(2025,2056,5)}
         yslider_popover_object = Sidebar.Popover('hover')
         yslider_popover = yslider_popover_object.create('yslider1_popover', 
-                                                        'To be defined')
+                                                        'Year to be shown.','popover_lever')
         yslider = html.Div([   
-                    html.Div(['Years', yslider_popover], className = 'facet_item_name'),
+                    html.Div(['Year', yslider_popover], className = 'facet_item_name'),
                     dcc.Slider(min = 2025, max = 2055, step = None, marks = marks,
                              value = 2050,
                              id= 'year_slider',
                              className = 'slider'),
-        ], id = 'slider_container')
+                    ])
         
         glist = [dbc.Row([
-                        dbc.Col([dbc.Stack([f"Heat generation in {year}",graph1_popover],
-                                          direction="horizontal"),graph6]),
-                        dbc.Col(html.Div(["Heat pump installations (domestic)",graph10])),
+                        dbc.Col([dbc.Stack([html.Div([f"Heat generation in {year}"],
+                                                     className='figure_title'),
+                                            gencomp_popover],
+                                          direction="horizontal"),
+                                 graph6]),
+                        dbc.Col([dbc.Stack([html.Div([f"Heat pump installations"],
+                                                     className='figure_title'),
+                                            hpinst_popover],
+                                          direction="horizontal"),
+                                 graph10]),
                     ], className='figure_row'),
-                dbc.Row([html.Div(yslider),
-                        dcc.Loading(dbc.Col(html.Div(graph2)))],
-                     className='figure_row'),
+                dbc.Row([dbc.Col([dbc.Stack([html.Div([f"Heat generation across GB"],
+                                             className='figure_title'),
+                                    genmap_popover,html.Br(), html.Div(yslider)],
+                                  direction="horizontal"),
+                          dcc.Loading(html.Div(graph2))])
+                         ],className='figure_row')
+                    
 
+                        # dcc.Loading(dbc.Col(html.Div(graph2)))],
                  ]
            
     elif tab == 'tab-1' and subtab_1 == 'subtab-1-2':
         
+        content_syscost_tooltip = ("This graph shows the total annual energy system cost"
+                                   " (for meeting the building sector demand)"
+                                   " split based on different parts of the system.")
+        content_invreq_tooltip = ("This graph shows average annual investment"
+                                  " requirements for the period 2023 to 2054.")
+        content_costmap_tooltip = ("These hexmaps show the annual heating cost"
+                                   " per domestic property (taking terraced"
+                                   " houses as reference)"
+                                   " for 2050 normalized with the average cost"
+                                   " for GB in the scenario shown on the left.")
+        content_heatcost_tooltip = ("This graph shows the annual heating cost"
+                                   " per domestic property (taking terraced"
+                                   " houses as reference)"
+                                   " normalized with the cost for the"
+                                   " base year period for Base net-zero scenario."
+                                   " The difference in the base year cost"
+                                   " is due to differences in cost allocation"
+                                   " across years (e.g., a faster phase out of"
+                                   " gas boilers will lead cost for stranded gas"
+                                   " network investments"
+                                   " to be allocated to years where gas is still used).")
+        
+        
+        syscost_popover = hover_popover_object.create('t1-2_syscost_popover', content_syscost_tooltip,'popover_figure')
+        invreq_popover = hover_popover_object.create('t1-2_invreq_popover', content_invreq_tooltip,'popover_figure')
+        costmap_popover = hover_popover_object.create('t1-2_costmap_popover', content_costmap_tooltip,'popover_figure')
+        heatcost_popover = hover_popover_object.create('t1-2_heatcost_popover', content_heatcost_tooltip,'popover_figure')
+                            
+
+
         files = ["plot_data_04_net.csv","plot_data_04_dh.csv",
                  "plot_data_04_h2.csv","plot_data_04_build.csv"]
         df_inv = [pd.read_csv(f'{appdir}/data/'+ f) for f in files]
@@ -313,14 +389,14 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 year = 2050,
                 scenarios = scenarios,
                 naming = scen_naming,
-                title = "Energy system cost in 2050",
+                title = None,
                 z_label = "Sector",
-                y_label = "Cost (billion GBP)")
+                y_label = "Total system cost (billion GBP)")
            
         graph9 = Barchart.ScenCompInvBarchart(
                 id = "heat_inv_comp",
                 df_inv = df_inv,
-                title = "Annual investment requirements",
+                title = None,
                 scenarios = scenarios,
                 naming = scen_naming)
         
@@ -337,74 +413,96 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         graph4 = Linechart.GenericLinechart(
                 id = 'hcost_path',
                 df = df_hcost_gb,
-                title="Heating cost",
+                title=None,
                 x="YEAR",
                 y="VALUE",
                 category="RUN",
                 scenarios = scenarios,
                 naming=scen_naming,
                 x_label = "Year",
-                y_label = "Cost (normalized)",
+                y_label = "Heating cost per property (normalized)",
                 l_label = "Scenarios"                            
                 )
         
-        graph1 = Barchart.LongFormBarchart(
-                'heat_generation_chart',
-                f'{appdir}/data/plot_data_01.csv',
-                title="testt",
-                x="YEAR",
-                y="VALUE",
-                category="TECHNOLOGY",
-                scenario = scenario,
-                x_label = "year",
-                y_label = "watt",
-                sex =  "Technologies"                             
-                )                             
+        # graph1 = Barchart.LongFormBarchart(
+        #         'heat_generation_chart',
+        #         f'{appdir}/data/plot_data_01.csv',
+        #         title="testt",
+        #         x="YEAR",
+        #         y="VALUE",
+        #         category="TECHNOLOGY",
+        #         scenario = scenario,
+        #         x_label = "year",
+        #         y_label = "watt",
+        #         sex =  "Technologies"                             
+        #         )                             
         
        
-        graph2 = Barchart.LongFormBarchart(
-                'heat_generation_cost',
-                f'{appdir}/data/plot_data_03.csv',
-                "Historical Data (2015) and Prediction",
-                "YEAR",
-                "VALUE",
-                "TECHNOLOGY",   
-                scenario = scenario,
-                x_label = "year",
-                y_label = "cost",
-                sex = 'Technologies'                             
-                )
+        # graph2 = Barchart.LongFormBarchart(
+        #         'heat_generation_cost',
+        #         f'{appdir}/data/plot_data_03.csv',
+        #         "Historical Data (2015) and Prediction",
+        #         "YEAR",
+        #         "VALUE",
+        #         "TECHNOLOGY",   
+        #         scenario = scenario,
+        #         x_label = "year",
+        #         y_label = "cost",
+        #         sex = 'Technologies'                             
+        #         )
         
 
         glist = [dbc.Row([
-                        dbc.Col(html.Div(["Title 1",graph8])),
-                        dbc.Col(html.Div(graph9)),
+                        dbc.Col([dbc.Stack([html.Div([f"Total energy system cost in 2050"],
+                                                     className='figure_title'),
+                                            syscost_popover],
+                                          direction="horizontal"),
+                                 graph8]),
+                        dbc.Col([dbc.Stack([html.Div([f"Average annual investment requirements"],
+                                                     className='figure_title'),
+                                            invreq_popover],
+                                          direction="horizontal"),
+                                 graph9]),
                     ], className='figure_row'),
                 dbc.Row([
-                            dbc.Col(html.Div(graph3))
+                            dbc.Col([dbc.Stack([html.Div([f"Heating cost per property (normalized)"],
+                                                         className='figure_title'),
+                                                costmap_popover],
+                                              direction="horizontal"),
+                                     graph3]),
                         ], className='figure_row'),
-                dbc.Row(
-                   [
-                       dbc.Col(html.Div(graph4)),
-                       dbc.Col(html.Div(graph2)),
-                   ], className='figure_row'),
-                 
-                 dbc.Row(
-                    [
-                        dbc.Col(html.Div(graph1)),
-                        dbc.Col(html.Div(graph2)),
-                    ], className='figure_row'),
+                dbc.Row([
+                                dbc.Col([dbc.Stack([html.Div([f"Heating cost per property (normalized)"],
+                                                             className='figure_title'),
+                                                    heatcost_popover],
+                                                  direction="horizontal"),
+                                         graph4]),
+                                dbc.Col([]),
+                            ], className='figure_row'),
                 ]
         
     elif tab == 'tab-1' and subtab_1 == 'subtab-1-3':
         
+        content_empath_tooltip = ("This graph shows CO2 emissions from the"
+                                  " energy system (with regard to the building"
+                                  " sector).")
+        content_nymap_tooltip = ("These hexmaps show the year local authorities"
+                                 " reach net-zero emissions (assumed to be"
+                                 " <2 % of base year emissions)")
+
+        
+        
+        empath_popover = hover_popover_object.create('t1-3empath_popover', content_empath_tooltip,'popover_figure')
+        nymap_popover = hover_popover_object.create('t1-3_nymap_popover', content_nymap_tooltip,'popover_figure')
+   
+
         df_em = pd.read_csv(f'{appdir}/data/plot_data_10.csv')
         df_em_loc = pd.read_csv(f'{appdir}/data/plot_data_05.csv')
         
         graph1 = Linechart.GenericLinechart(
                 id = 'em_pathways',
                 df = df_em,
-                title="Emission pathways",
+                title=None,
                 x="YEAR",
                 y="VALUE",
                 category="RUN",
@@ -419,7 +517,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 id = "net-zero_map",
                 df = df_em_loc,
                 title = None,
-                zlabel = "Year of 95%<br> emission<br> reduction",
+                zlabel = "Year of 98%<br> emission<br> reduction",
                 scenarios = scenarios,
                 naming=scen_naming,
                 range_color=[2025,2060])
@@ -427,14 +525,21 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
 
         
         glist = [dbc.Row([
-                        dbc.Col(html.Div(graph1)),
-                        dbc.Col(html.Div(graph1)),
-                    ], className='figure_row'),
-                 
-                 dbc.Row(
-                    [
-                        dbc.Col(html.Div(graph2)),
-                    ], className='figure_row'),
+                            dbc.Col([dbc.Stack([html.Div([f"Energy-related CO2 emissions"],
+                                                         className='figure_title'),
+                                                empath_popover],
+                                              direction="horizontal"),
+                                     graph1]),
+                            dbc.Col([]),
+                        ], className='figure_row'),
+                dbc.Row([
+                                    dbc.Col([dbc.Stack([html.Div([f"First year of net-zero emissions"],
+                                                                 className='figure_title'),
+                                                        nymap_popover],
+                                                      direction="horizontal"),
+                                             graph2]),
+                                ], className='figure_row'),
+                        
                 ]
         # html.Div([graph1, graph2, graph5],
         #                  style={'display': 'flex', 'flexDirection': 'row'})]
@@ -443,18 +548,33 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
     
     elif tab == 'tab-2' and subtab_2 == 'subtab-2-1':
         
-        df_gen = pd.read_csv(f'{appdir}/data/plot_data_01.csv')
-        df_cost = pd.read_csv(f'{appdir}/data/plot_data_03.csv')
         df_inst_loc = pd.read_csv(f'{appdir}/data/plot_data_09l.csv')
         df_gen_loc = pd.read_csv(f'{appdir}/data/plot_data_02n.csv')
         
+        # convert to thousands
+        df_inst_loc["VALUE"] = df_inst_loc["VALUE"]*1000
         
+        year = 2050
+        # - Create popover for graph titles
+        
+        content_gencomp_tooltip = ("This graph shows the heat generation in"
+                                   " domestic and non-domestic properties by"
+                                   " technology in the base years (2015-2020)"
+                                   " and for each scenario and local authority"
+                                   f" in {year}.")
+        content_hpinst_tooltip = ("This graph shows the number of heat pumps"
+                                   " installed annually in domestic properties"
+                                   " for each scenario and local authority.")
+
+        gencomp_popover = hover_popover_object.create('t2-1_gencomp_popover', content_gencomp_tooltip,'popover_figure')
+        hpinst_popover = hover_popover_object.create('t2-1_hpinst_popover', content_hpinst_tooltip,'popover_figure')
+ 
         
         graph6 = Barchart.ScenLocalCompGenBarchart(
                 id = "heat_gen_cost_local_comp",
-                title="te",
+                title=None,
                 df_gen = df_gen_loc,
-                year = 2050,
+                year = year,
                 lads = lads,
                 y_label='Fraction supplied by technology (-)',
                 scenarios = scenarios,
@@ -464,7 +584,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         graph10 = Linechart.GenericLinechart(
                 id = 'hp_installations_loc',
                 df = df_inst_loc,
-                title="Heat pump installations (domestic)",
+                title=None,
                 x="YEAR",
                 y="VALUE",
                 category="RUN",
@@ -472,14 +592,23 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 lads = lads,
                 naming=scen_naming,
                 x_label = "Year",
-                y_label = "Number of HPs installed per year (millions)",
+                y_label = "Number of HPs installed per year (thousands)",
                 l_label = None                            
                 )
         
         glist = [dbc.Row([
-                        dbc.Col(html.Div(graph6)),
-                        dbc.Col(html.Div(graph10)),
+                        dbc.Col([dbc.Stack([html.Div([f"Heat generation in {year}"],
+                                                     className='figure_title'),
+                                            gencomp_popover],
+                                          direction="horizontal"),
+                                 graph6]),
+                        dbc.Col([dbc.Stack([html.Div([f"Heat pump installations"],
+                                                     className='figure_title'),
+                                            hpinst_popover],
+                                          direction="horizontal"),
+                                 graph10]),
                     ], className='figure_row'),
+
 
 
                  ]
@@ -552,12 +681,23 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         
     elif tab == 'tab-2' and subtab_2 == 'subtab-2-3':
         
+        # - Create popover for graph titles
+        
+        content_empath_tooltip = ("This graph shows CO2 emissions from the"
+                                  " energy system (with regard to the building"
+                                  " sector).")
+
+        empath_popover = hover_popover_object.create('t3-3_empath_popover', content_empath_tooltip,'popover_figure')
+
+        
         df_em = pd.read_csv(f'{appdir}/data/plot_data_10_loc.csv')
         
+
+    
         graph1 = Linechart.GenericLinechart(
                 id = 'em_pathways',
                 df = df_em,
-                title="Emission pathways",
+                title=None,
                 x="YEAR",
                 y="VALUE",
                 category="RUN",
@@ -570,8 +710,13 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 )
             
         glist = [dbc.Row([
-                        dbc.Col(html.Div(graph1)),
-                    ], className='figure_row'),
+                            dbc.Col([dbc.Stack([html.Div([f"Energy-related CO2 emissions"],
+                                                         className='figure_title'),
+                                                empath_popover],
+                                              direction="horizontal"),
+                                     graph1]),
+                            dbc.Col([]),
+                        ], className='figure_row'),
                  
                 ]
         # html.Div([graph1, graph2, graph5],

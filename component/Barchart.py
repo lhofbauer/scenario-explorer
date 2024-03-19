@@ -23,7 +23,8 @@ def LongFormBarchart(id, path, title, x, y, category,
                  color = category)
     fig.layout = dict(xaxis = dict(type = "category"), barmode = 'stack', title = title)
     fig.update_layout(paper_bgcolor = 'white', plot_bgcolor = 'white', 
-                      legend_title_text = sex, legend_tracegroupgap = 5)
+                      legend_title_text = sex, legend_tracegroupgap = 5,
+                      margin=dict(l=20, r=20, t=10, b=20))
     fig.update_xaxes(title_text = x_label)
     fig.update_yaxes(title_text = y_label)
     
@@ -40,9 +41,9 @@ def ScenCompInvBarchart(id, df_inv, naming, title=None,
                      scenarios = None, lads = None):
     
     gobj = list()
-    titles = ["Networks","District heating",
+    titles = ["Power and gas networks","District heating systems",
               "Hydrogen production","Building technologies"]
-    
+    ymax = 0
     for df in df_inv:
         df = df.groupby("RUN",as_index=False).sum()
         df = df[df['RUN'].isin(scenarios)]
@@ -52,7 +53,9 @@ def ScenCompInvBarchart(id, df_inv, naming, title=None,
             df["RUN"] = df["RUN"] + "<br>" + df["REGION"]
             
         fig = px.bar(df,x="RUN",y="VALUE")#color="TECHNOLOGY"
+        #fig.update_layout(yaxis_range=[0,20])
         gobj.append(fig)
+        ymax = max(ymax,df["VALUE"].max())
             
     cols = 2
     rows = 2
@@ -60,7 +63,7 @@ def ScenCompInvBarchart(id, df_inv, naming, title=None,
     fig = make_subplots(rows=rows, cols=cols,specs=specs,
                         subplot_titles=tuple(titles),
                         shared_xaxes=True,
-                        #horizontal_spacing = 0,vertical_spacing = 0)
+                        horizontal_spacing = 0.1,vertical_spacing = 0.1
                         #column_titles=techs , row_titles=scens )
                         )
     i=0
@@ -74,9 +77,11 @@ def ScenCompInvBarchart(id, df_inv, naming, title=None,
             i = i+1
     
     fig.update_yaxes(title_text="Investments (billion GBP)",col=1,row=2)
+    fig.update_yaxes(range=[0, ymax+1])
     fig.update_xaxes(tickangle=45, row=2)
 
-    fig.update_layout(showlegend=False,
+    fig.update_layout(margin=dict(l=20, r=20, t=20, b=20),
+                      showlegend=False,
                      barmode='stack',
                      xaxis_title=None,
                      title=title)
@@ -96,7 +101,7 @@ def ScenCompCostBarchart(id, df_cost, year, scenarios, naming, title=None,
     # cost in early years in scenarios with emission target)
     # using a scenario without emission target might be the best (?)
     by = df_cost.loc[(df_cost["YEAR"]==2015)&
-                    (df_cost["RUN"]=="nz-2050_hp-00_dh-00_lp-00_h2-01_UK|LA|SO")]
+                    (df_cost["RUN"]=="nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO")]
     by.loc[:,"RUN"] = "Base year"
     df_cost = pd.concat([by,
                         df_cost.loc[(df_cost["YEAR"]==year)]])
@@ -117,7 +122,8 @@ def ScenCompCostBarchart(id, df_cost, year, scenarios, naming, title=None,
         line_dash="dot",
         line_color="black"
         )
-    fig.update_layout(legend=dict(orientation="v",
+    fig.update_layout(margin=dict(l=20, r=20, t=10, b=20),
+                      legend=dict(orientation="v",
                     title=z_label,
                     #x=1.2,
                     #xref = "container",
@@ -182,52 +188,47 @@ def ScenCompGenBarchart(id, df_gen, df_cost, year, title, naming,
     # cost in early years in scenarios with emission target)
     # using a scenario without emission target might be the best (?)
     # FIXME: pick appropriate scenario for base year
-    df_cost.loc[("Base year",year),:] = df_cost.loc[("nz-2050_hp-00_dh-00_lp-00_h2-01_UK|LA|SO",2015),:]
+    df_cost.loc[("Base year",year),:] = df_cost.loc[("nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO",2015),:]
     df_cost = df_cost[df_cost.index.get_level_values('RUN').isin(scenarios+["Base year"])]
     
     df_cost = df_cost.rename(index=naming)
-    # df_cost = df_cost.rename(index=naming)
-    # costf = cost.copy()
-    # costf.loc[("Base year",year),:] = costf.loc[("No decarbonization",2015),:]
-    # costf = costf.xs(year,level="YEAR")
-    
-    # costa = cost.copy()
-    # costa = costa.groupby("RUN").mean() 
+
     
     fig.add_trace(
-               go.Scatter(
-                   x=df_cost.xs(year,level="YEAR").index.get_level_values("RUN"),
-                   y=df_cost.xs(year,level="YEAR")["VALUE"],
-                   yaxis="y2",
-                   #legendgroup="cost",
-                   #legendgrouptitle=dict(text="System cost"),
-                   name="Annual cost (year shown)",
-                   mode="markers",
-                   marker=dict(size=12,
-                               line=dict(width=2,
-                               color='DarkSlateGrey'))
-               ))
+                go.Scatter(
+                    x=df_cost.xs(year,level="YEAR").index.get_level_values("RUN"),
+                    y=df_cost.xs(year,level="YEAR")["VALUE"],
+                    yaxis="y2",
+                    #legendgroup="cost",
+                    #legendgrouptitle=dict(text="Energy system cost"),
+                    name=str(year) + " (2015 for BY)",
+                    mode="markers",
+                    marker=dict(size=12,
+                                line=dict(width=2,
+                                color='DarkSlateGrey'))
+                ))
     
+    df_cost = df_cost.loc[df_cost.index.get_level_values("RUN")!="Base year"].groupby("RUN").mean()
     fig.add_trace(
-               go.Scatter(
-                   x=df_cost.groupby("RUN").mean().index.get_level_values("RUN"),
-                   y=df_cost.groupby("RUN").mean()["VALUE"],
-                   yaxis="y2",
-                   #legendgroup="cost",
-                   #legendgrouptitle=dict(text="System cost"),
-                   name="Annual cost (average)",
-                   mode="markers",
-                   marker=dict(size=12,
-                               line=dict(width=2,
-                               color='DarkRed'))
-               ))
+                go.Scatter(
+                    x=df_cost.index.get_level_values("RUN"),
+                    y=df_cost["VALUE"],
+                    yaxis="y2",
+                    #legendgroup="cost",
+                    #legendgrouptitle=dict(text="System cost"),
+                    name="Average",
+                    mode="markers",
+                    marker=dict(size=12,
+                                line=dict(width=2,
+                                color='DarkRed'))
+                ))
     
     
     fig.for_each_trace(
     lambda trace: trace.update(legendgroup="g1",
-                       legendgrouptitle=dict(text="Technology")) if trace.yaxis != 'y2' else 
+                        legendgrouptitle=dict(text="Technology")) if trace.yaxis != 'y2' else 
                 trace.update(legendgroup="g2",
-                             legendgrouptitle=dict(text="System cost")),
+                              legendgrouptitle=dict(text="Annual energy system cost")),
                     )
 
     fig.update_layout(title=title,
@@ -247,7 +248,7 @@ def ScenCompGenBarchart(id, df_gen, df_cost, year, title, naming,
                        yaxis2=dict(
                            title=dict(text="Energy system cost (billion GBP)"),
                            side="right",
-                           range=[0, 50],
+                           range=[0, 75],
                            overlaying="y",
                            tickmode="sync",
                        ),
@@ -269,7 +270,7 @@ def ScenLocalCompGenBarchart(id, df_gen, lads, year, title, naming,
                         ):
 
     by = df_gen.loc[(df_gen["YEAR"]==2015)&
-                    (df_gen["RUN"]=="nz-2050_hp-00_dh-00_lp-00_h2-01_UK|LA|SO")&
+                    (df_gen["RUN"]=="nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO")&
                     (df_gen["REGION"].isin(lads))]
     by.loc[:,"RUN"] = "Base year"
     
@@ -298,9 +299,10 @@ def ScenLocalCompGenBarchart(id, df_gen, lads, year, title, naming,
 
     
     #fig.layout = dict(xaxis = dict(type = "category"), barmode = 'stack', title = title)
-    fig.update_layout(paper_bgcolor = 'white', plot_bgcolor = 'white', 
-                      legend_title_text = "Technology", legend_tracegroupgap = 5,
-                      margin=dict(l=20, r=20, t=10, b=20))
+    # fig.update_layout(paper_bgcolor = 'white', plot_bgcolor = 'white', 
+    #                   legend_title_text = "Technology", legend_tracegroupgap = 5,
+    fig.update_layout(margin=dict(l=20, r=20, t=10, b=20),
+                      legend_title_text = "Technology")
     fig.update_xaxes(title_text = x_label,
                      tickangle=45)
     fig.update_yaxes(title_text = y_label)

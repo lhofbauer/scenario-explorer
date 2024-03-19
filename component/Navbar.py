@@ -4,7 +4,19 @@ import dash_bootstrap_components as dbc
 #CONTENT
 navbar_title = 'ENERGY TRANSITION SCENARIO EXPLORER'
 navbar_subtitle = ''#'Explore heat decarbonization scenarios for Great Britain'
-footer_content = 'Developed at UCL funded by EPSRC (EP/X525649/1)| [...]'
+footer_content = [
+                  html.A(['Developed at UCL'], href = 'https://www.ucl.ac.uk/bartlett/environment-energy-resources/bartlett-school-environment-energy-and-resources',
+                         target="_blank",
+                         className = 'navlink'),
+                  '|',
+                  html.A(['Funded by EPSRC (EP/X525649/1)'], href = 'https://www.ukri.org/councils/epsrc/',
+                         target="_blank",
+                         className = 'navlink'),
+                  '|',
+                  html.A(['Source code on GitHub'], href = 'https://www.ukri.org/councils/epsrc/',
+                         target="_blank",
+                         className = 'navlink'),
+                  ]
 
 
 def createNavbar():
@@ -17,8 +29,6 @@ def createNavbar():
         return navbar
 
 def createFooter():
-        footer = html.Footer([footer_content,
-                              html.A(['Git Repo'], href = 'https://www.example.com', className = 'navlink')
-                              ],
+        footer = html.Footer(footer_content,
                              id = 'footer', className = "footer_text")
         return footer

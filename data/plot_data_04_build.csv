@@ -20,6 +20,20 @@ nz-2045_hp-00_dh-00_lp-01_h2-01_UK|LA|SO,Heat interface,0.11161723838875189
 nz-2045_hp-00_dh-00_lp-01_h2-01_UK|LA|SO,Heat pumps,5.877582095325691
 nz-2045_hp-00_dh-00_lp-01_h2-01_UK|LA|SO,Others,0.880921631403119
 nz-2045_hp-00_dh-00_lp-01_h2-01_UK|LA|SO,Wet heating system,1.3988633888325346
+nz-2045_hp-00_dh-01_lp-00_h2-00_UK|LA|SO,Building retrofit,0.411562744570659
+nz-2045_hp-00_dh-01_lp-00_h2-00_UK|LA|SO,Electric heating,0.4272022816034665
+nz-2045_hp-00_dh-01_lp-00_h2-00_UK|LA|SO,Fossil fuel boilers,1.047415527724625
+nz-2045_hp-00_dh-01_lp-00_h2-00_UK|LA|SO,Heat interface,0.014844315198207421
+nz-2045_hp-00_dh-01_lp-00_h2-00_UK|LA|SO,Heat pumps,6.602365933863125
+nz-2045_hp-00_dh-01_lp-00_h2-00_UK|LA|SO,Others,0.08560781449522414
+nz-2045_hp-00_dh-01_lp-00_h2-00_UK|LA|SO,Wet heating system,1.453149912721729
+nz-2045_hp-00_dh-01_lp-00_h2-01_UK|LA|SO,Building retrofit,0.4111202144763805
+nz-2045_hp-00_dh-01_lp-00_h2-01_UK|LA|SO,Electric heating,0.06068154447660499
+nz-2045_hp-00_dh-01_lp-00_h2-01_UK|LA|SO,Fossil fuel boilers,1.0282334388555512
+nz-2045_hp-00_dh-01_lp-00_h2-01_UK|LA|SO,Heat interface,0.013955090980586806
+nz-2045_hp-00_dh-01_lp-00_h2-01_UK|LA|SO,Heat pumps,6.038766040689599
+nz-2045_hp-00_dh-01_lp-00_h2-01_UK|LA|SO,Others,0.819758817719806
+nz-2045_hp-00_dh-01_lp-00_h2-01_UK|LA|SO,Wet heating system,1.4412243248298031
 nz-2045_hp-00_dh-01_lp-01_h2-00_UK|LA|SO,Building retrofit,0.4324979849353712
 nz-2045_hp-00_dh-01_lp-01_h2-00_UK|LA|SO,Electric heating,0.6807523271961843
 nz-2045_hp-00_dh-01_lp-01_h2-00_UK|LA|SO,Fossil fuel boilers,0.9353146829048468
@@ -41,6 +55,13 @@ nz-2045_hp-01_dh-00_lp-00_h2-00_UK|LA|SO,Heat interface,0.5831480611986031
 nz-2045_hp-01_dh-00_lp-00_h2-00_UK|LA|SO,Heat pumps,0.7352054271861415
 nz-2045_hp-01_dh-00_lp-00_h2-00_UK|LA|SO,Others,0.034708007879400246
 nz-2045_hp-01_dh-00_lp-00_h2-00_UK|LA|SO,Wet heating system,0.32605382779880066
+nz-2045_hp-01_dh-00_lp-00_h2-01_UK|LA|SO,Building retrofit,0.562999818990524
+nz-2045_hp-01_dh-00_lp-00_h2-01_UK|LA|SO,Electric heating,1.6590350479380742
+nz-2045_hp-01_dh-00_lp-00_h2-01_UK|LA|SO,Fossil fuel boilers,0.9365011288705143
+nz-2045_hp-01_dh-00_lp-00_h2-01_UK|LA|SO,Heat interface,0.5345570856690804
+nz-2045_hp-01_dh-00_lp-00_h2-01_UK|LA|SO,Heat pumps,0.7237591306392162
+nz-2045_hp-01_dh-00_lp-00_h2-01_UK|LA|SO,Others,0.5264589792948857
+nz-2045_hp-01_dh-00_lp-00_h2-01_UK|LA|SO,Wet heating system,0.36578149438953456
 nz-2045_hp-01_dh-00_lp-01_h2-00_UK|LA|SO,Building retrofit,0.5399478024864202
 nz-2045_hp-01_dh-00_lp-01_h2-00_UK|LA|SO,Electric heating,2.566986539940315
 nz-2045_hp-01_dh-00_lp-01_h2-00_UK|LA|SO,Fossil fuel boilers,0.8455650968820017
@@ -83,6 +104,13 @@ nz-2045_hp-01_dh-01_lp-01_h2-01_UK|LA|SO,Heat interface,0.013425112187071755
 nz-2045_hp-01_dh-01_lp-01_h2-01_UK|LA|SO,Heat pumps,0.7369059105386505
 nz-2045_hp-01_dh-01_lp-01_h2-01_UK|LA|SO,Others,0.6116473679534971
 nz-2045_hp-01_dh-01_lp-01_h2-01_UK|LA|SO,Wet heating system,0.26075525427283963
+nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO,Building retrofit,0.3799571947641705
+nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO,Electric heating,0.08003234616714339
+nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO,Fossil fuel boilers,1.0531563394666172
+nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO,Heat interface,0.2563237185729567
+nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO,Heat pumps,6.100919138527856
+nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO,Others,0.31364926749912253
+nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO,Wet heating system,1.457584570276214
 nz-2050_hp-00_dh-00_lp-00_h2-01_UK|LA|SO,Building retrofit,0.3820770123171526
 nz-2050_hp-00_dh-00_lp-00_h2-01_UK|LA|SO,Electric heating,0.010818899443828396
 nz-2050_hp-00_dh-00_lp-00_h2-01_UK|LA|SO,Fossil fuel boilers,1.0155631427181342

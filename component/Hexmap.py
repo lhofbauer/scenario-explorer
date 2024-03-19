@@ -121,12 +121,12 @@ def GenericHexmap(id, df,  scenarios, techs=None, year= None, title=None,
         fig.update_geos(visible=False,
                         lonaxis_range=[-7.5,17],
                         lataxis_range=[-3.5,27])
-        print(ftechmap)
         fig.update_traces(hovertemplate = "%{location}: %{z}")
         fig.update_coloraxes(colorbar_title=dict(text=zlabel),
                              cmin=range_color[0] if range_color else None,
                              cmax=range_color[1] if range_color else None)
-        
+        fig.update_layout(margin=dict(l=20, r=20, t=20, b=20),
+                          height=400)
 
     else:
 
@@ -173,13 +173,14 @@ def GenericHexmap(id, df,  scenarios, techs=None, year= None, title=None,
         
         fig.update_geos(visible=False,
                         lonaxis_range=[-7.5,17],
-                        lataxis_range=[-3.5,27])
+                        lataxis_range=[-3.5,26])
         fig.update_traces(hovertemplate = "%{location}: %{z}")
         fig.update_coloraxes(colorbar_title=dict(text=zlabel),
                              #colorscale = ccm,
                              cmin=range_color[0] if range_color else None,
                              cmax=range_color[1] if range_color else None)
-        fig.update_layout(height = len(scenarios) * 400)
+        fig.update_layout(margin=dict(l=20, r=20, t=20, b=20),
+                         height = 400+(len(scenarios)-1)*100)
 
     
     if figonly:

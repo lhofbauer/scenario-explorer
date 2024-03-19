@@ -399,7 +399,7 @@ if __name__ == "__main__":
                              reagg=tech_agg,
                              relative=["TECHNOLOGY"],
                              naming=naming,
-                             #zorder=zo,
+                             zorder=zo,
                              )
 
     
@@ -415,15 +415,15 @@ if __name__ == "__main__":
     
     def groupby(x):
         if ("WDIS" in x) or ("RAUP" in x):
-            n = "Wet heating system"
+            n = "Building heat distribution"
         elif x.startswith("BE"):
             n = "Building retrofit"
         elif ("DD" in x) or ("DNDO" in x):
-            n = "Building heating"
+            n = "Building heat technologies"
         elif x.startswith("DH") or ("SDIS" in x):
-            n = "District heat"
+            n = "District heating systems"
         elif ("TDIS" in x) or ("TTRA" in x):
-            n = "Networks"
+            n = "Gas and power networks"
         elif (("SNAT" in x) or ("SEXT" in x)) and ("BS" not in x[2:]):
             n = "Energy supply"
         else:
@@ -512,11 +512,11 @@ if __name__ == "__main__":
 
         # convert to per year
         d["VALUE"] =  d["VALUE"]/(2054-2023)
-
+        d = d.reset_index()
         d.loc[:,"REGION"] = d.loc[:,"REGION"].map(mapping)
         
         # save data
-        d.to_csv(dpath+f"plot_data_04_loc_{p['short']}.csv")  
+        d.to_csv(dpath+f"plot_data_04_loc_{p['short']}.csv",index=False)  
         
         # convert to billions
         d["VALUE"] =  d["VALUE"]/1000
@@ -528,7 +528,7 @@ if __name__ == "__main__":
 
     # Data analysis element 05 –  Net zero maps
     
-    reduction_value = 0.05
+    reduction_value = 0.02
     
     em = data[0]["AnnualEmissions"].copy()
     # divide by number of years in period to get average annual emissions
@@ -636,20 +636,24 @@ if __name__ == "__main__":
     techcaps = pd.read_csv(dpath+"dwelling_tech_caps.csv",
                            index_col=("TECHNOLOGY"))
     
+    tech_agg = {"ASHP":"HP",
+                "GSHP": "HP"}
     plot_data = arrange_data(results=data,
                             var="NewCapacity",
                             xscale=xscale,
                             filter_in={"YEAR":[2015,2022,2023,2025,2030,
                                             2035,2040,2045,2050,2055],
-                                       "TECHNOLOGY":["ASHP"]},
+                                       "TECHNOLOGY":["ASHPDD","GSHPDD"]},
                             zgroupby=["RUN","REGION","TECHNOLOGY","YEAR"],
                             cgroupby={"TECHNOLOGY":lambda x: x[0:4],
                                       "REGION":lambda x: x[0:9]
                                       },
+                            reagg=tech_agg,
                             #naming=naming,
                             #zorder=zo,
                             )
     plot_data_09l = plot_data/techcaps.loc["ASHP"].mean()
+    plot_data.groupby(["RUN","TECHNOLOGY","YEAR"]).sum()
     plot_data_09l = plot_data_09l.reset_index()
     plot_data_09l["REGION"] = plot_data_09l["REGION"].map(mapping)
     # FIXME: this is a simplified calc, might need to improve
@@ -690,7 +694,7 @@ if __name__ == "__main__":
     # calculate demand
     ecs = ["HWDDDE", "HWDDFL", "HWDDSD", "HWDDTE",
            "SHDDDE", "SHDDFL", "SHDDSD", "SHDDTE"]
-    ecs = ["HWDDTE","SHDDTE"]
+    ecs = ["HWDDFL","SHDDFL"]
     dem = (data[0]["SpecifiedAnnualDemand"]
            *data[0]["SpecifiedDemandProfile"]).dropna()
     dem = dem[dem.index.get_level_values("FUEL").str.startswith(tuple(ecs))]
@@ -740,7 +744,8 @@ if __name__ == "__main__":
     data[0]["CostPerDomHeat"].loc[:,"VALUE"] = data[0]["CostPerDomHeat"].loc[:,"VALUE"].multiply(xscale,
                                                                    axis=0)
 
-    plot_data_11 = data[0]["CostPerDomProp"]
+    plot_data_11 = data[0]["CostPerDomProp"].loc[data[0]["CostPerDomProp"].index.get_level_values("YEAR")<2060].reset_index()
+    plot_data_12 = data[0]["CostPerDomHeat"].loc[data[0]["CostPerDomHeat"].index.get_level_values("YEAR")<2060].reset_index()
     # model.results[0]["CostPerDomPropGDHI"] = (model.results[0]["CostPerDomProp"]
     #                                           .divide(gdhi["2021"],level=1,axis=0)
     #                                           .dropna())
@@ -752,7 +757,10 @@ if __name__ == "__main__":
     
     
     # save data
-    plot_data_11.to_csv(dpath+"plot_data_11.csv")
-
+    plot_data_11.to_csv(dpath+"plot_data_11.csv", index=False)
     plot_data_11.loc[:,"REGION"] = plot_data_11.loc[:,"REGION"].map(mapping)
-    plot_data_11.to_csv(dpath+"plot_data_11n.csv")      
+    plot_data_11.to_csv(dpath+"plot_data_11n.csv", index=False)
+    
+    plot_data_12.to_csv(dpath+"plot_data_12.csv", index=False)
+    plot_data_12.loc[:,"REGION"] = plot_data_12.loc[:,"REGION"].map(mapping)
+    plot_data_12.to_csv(dpath+"plot_data_12n.csv", index=False) 

@@ -9,7 +9,7 @@ appdir = str(Path(__file__).parent.parent.resolve())
 content_title = 'Scenarios toolbar'
 content_description = 'Create and choose scenarios to display below.'
 content_facet_1 = 'Choose Scenarios to display'
-dropdown_description = 'Choose a pre-defined or default scenario as starting point.'
+dropdown_description = 'Choose a pre-defined scenario as starting point.'
 levers_description = 'Adjust the scenario by moving the scenario levers.'
 content_facet_2 = 'Customize Scenarios'
 content_lev_1 = 'Net-zero Target'
@@ -25,7 +25,7 @@ content_lev_3_tooltip = ('This lever customizes the rollout of district heating 
                          ' The "Cost-optimal" option assumes district heating is built'
                          ' where cost-optimal. The "Limited"'
                          ' option assumes a no additional district heating'
-                         ' networks are built.')
+                         ' networks are built in future.')
 content_lev_4 = 'Hydrogen'
 content_lev_4_tooltip = ('This lever customizes the potential use of hydrogen'
                          ' for heating. The "Cost-optimal" option assumes'
@@ -33,7 +33,7 @@ content_lev_4_tooltip = ('This lever customizes the potential use of hydrogen'
                          ' "Forced" option assumes 10% and 20% of demand is met by'
                          ' hydrogen boilers by 2040 and 2050, respectively.')
 content_lev_5 = 'Local pledges'
-content_lev_5_tooltip = ('This lever customizes to what extent local authority net-zero'
+content_lev_5_tooltip = ("This lever customizes to what extent local authorities' net-zero"
                          ' pledges are achieved. The "Not implemented" option assumes'
                          ' pledges are not specifically followed if not aligned'
                          ' with the national target. The "Implemented"'
@@ -46,14 +46,14 @@ class Popover():
     def __init__(self, trigger):
         self.trigger = trigger
     
-    def create(self, popover_id, content):
+    def create(self, popover_id, content, className):
         self.children = content
 
         return html.Div (
             [
                 html.Img(
                     src = '../assets/icons/question_popover.png',
-                    className = 'popover_lever', id = popover_id),
+                    className = className, id = popover_id),
                 dbc.Popover(
                     content, 
                     target = popover_id, 
@@ -62,22 +62,18 @@ class Popover():
         ])
     
 # - Create popover for levers
-lever1_Popover_object = Popover('hover')
-lever1_popover = lever1_Popover_object.create('lever1_popover', content_lev_1_tooltip)
-lever2_Popover_object = Popover('hover')
-lever2_popover = lever2_Popover_object.create('lever2_popover', content_lev_2_tooltip)
-lever3_Popover_object = Popover('hover')
-lever3_popover = lever3_Popover_object.create('lever3_popover', content_lev_3_tooltip)
-lever4_Popover_object = Popover('hover')
-lever4_popover = lever4_Popover_object.create('lever4_popover', content_lev_4_tooltip)
-lever5_Popover_object = Popover('hover')
-lever5_popover = lever5_Popover_object.create('lever5_popover', content_lev_5_tooltip)
+hover_popover_object = Popover('hover')
+lever1_popover = hover_popover_object.create('lever1_popover', content_lev_1_tooltip,'popover_lever')
+lever2_popover = hover_popover_object.create('lever2_popover', content_lev_2_tooltip,'popover_lever')
+lever3_popover = hover_popover_object.create('lever3_popover', content_lev_3_tooltip,'popover_lever')
+lever4_popover = hover_popover_object.create('lever4_popover', content_lev_4_tooltip,'popover_lever')
+lever5_popover = hover_popover_object.create('lever5_popover', content_lev_5_tooltip,'popover_lever')
 
 #EXTRACT SCENARIOS AND LEVERS
 
 # FIXME: define these scenarios in a data file and load from the file
 predef_scenarios = [{'label': 'Base net-zero scenario',
-                     'value':'nz-2050_hp-00_dh-00_lp-00_h2-01_UK|LA|SO'},
+                     'value':'nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO'},
                     {'label': 'High ambition scenario',
                      'value':'nz-2045_hp-00_dh-00_lp-01_h2-00_UK|LA|SO'}]
 # create list of dropdown options including style
@@ -135,7 +131,7 @@ def sidebar():
                        id= 'dh_slider', className = 'slider'),
             html.Div([content_lev_4,lever4_popover], className = 'facet_item_name'),
             dcc.Slider(min = 0, max = 1, step = None, marks = lev4,
-                       value = 1,
+                       value = 0,
                        id= 'h2_slider', className = 'slider'),
             html.Div([content_lev_5, lever5_popover], className = 'facet_item_name'),
             dcc.Slider(min = 0, max = 1, step = None, marks = lev5, value = 0,
