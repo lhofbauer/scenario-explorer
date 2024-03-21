@@ -139,10 +139,13 @@ def sidebar():
             html.Br(),
             dcc.Input(id='scenario_name_field', type='text', value='',
                       placeholder = 'Scenario name'),
-            html.Div([html.Button(id = 'submit_button', n_clicks = 0,
-                        children='Create'),
-                      html.Span('', id = 'scenario_creation_response')],
-                      style = {'display':'flex', 'align-items':'center'}),
+            html.Div([html.Div('', id = 'scenario_creation_response'),
+                      html.Button(id = 'submit_button', n_clicks = 0,
+                                  children = 'Create')],
+                                  style = {'display':'flex', 
+                                           'flex-direction': 'column',
+                                           'align-items':'center',
+                                           'padding-left':'10px'})
 
             # dcc.Slider(min=2040, max=2050, step=None,marks=lev1,value=2050,
             #            tooltip={'template':'Net-zero target for the UK to be achieved in {value}.',

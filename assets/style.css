@@ -75,7 +75,7 @@ body{
 #sidebar {
     top:0;
     left:1rem;
-    height: 920px;
+    height: 150vh;
     width: 20%;
     padding: 2rem 2rem;
     background-color: #ffffff;
@@ -123,6 +123,7 @@ body{
   font-size: 14px;
   border: 1px solid #a5a5a5ff !important;
   border-radius: 30px !important;
+  text-align: center !important;
 }
 
 input::placeholder {
@@ -189,6 +190,7 @@ input::placeholder {
 
 #scenario_creation_response {
   font-family: Roboto;
+  height: 20px;
   font-size: 14px;
   color: #66c2a5;
   margin-left: 20px;
