@@ -397,6 +397,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 id = "heat_inv_comp",
                 df_inv = df_inv,
                 title = None,
+                y_label= "Investments (billion GBP)",
                 scenarios = scenarios,
                 naming = scen_naming)
         
@@ -623,6 +624,32 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         # glist = [graph7_cluster]
     elif tab == 'tab-2' and subtab_2 == 'subtab-2-2':
         
+        content_invreq_tooltip = ("This graph shows average annual investment"
+                                  " requirements for the period 2023 to 2054.")
+
+        content_heatcost_tooltip = ("This graph shows the annual heating cost"
+                                   " per flat (as example of per property cost)."
+                                   " This includes cost for heating system and"
+                                   " the supply of energy. It relates to system cost"
+                                   " and does not necessarily directly correlate"
+                                   " with price/cost paid by households (e.g.,"
+                                   " it does not include margins of power"
+                                   " producers)"
+                                   " The difference in the base year cost across"
+                                   " the same LAD but different scenarios"
+                                   " is due to differences in cost allocation"
+                                   " across years (e.g., a faster phase out of"
+                                   " gas boilers will lead to cost for stranded gas"
+                                   " network investments"
+                                   " to be allocated to years where gas is still used).")
+        
+        
+       
+        invreq_popover = hover_popover_object.create('t2-2_invreq_popover', content_invreq_tooltip,'popover_figure')  
+        heatcost_popover = hover_popover_object.create('t2-2_heatcost_popover', content_heatcost_tooltip,'popover_figure')
+                            
+
+
         files = ["plot_data_04_loc_net.csv","plot_data_04_loc_dh.csv",
                  "plot_data_04_loc_h2.csv","plot_data_04_loc_build.csv"]
         df_inv = [pd.read_csv(f'{appdir}/data/'+ f) for f in files]
@@ -649,7 +676,8 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         graph1 = Barchart.ScenCompInvBarchart(
                 id = "heat_inv_comp",
                 df_inv = df_inv,
-                title = "Annual investment requirements",
+                title = None,
+                y_label= "Investments (million GBP)",
                 scenarios = scenarios,
                 lads = lads,
                 naming = scen_naming)
@@ -658,7 +686,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         graph2 = Linechart.GenericLinechart(
                 id = 'hcost_path',
                 df = df_hcost,
-                title="Heating cost",
+                title=None,
                 x="YEAR",
                 y="VALUE",
                 category="RUN",
@@ -666,7 +694,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 lads = lads,
                 naming=scen_naming,
                 x_label = "Year",
-                y_label = "Cost (normalized)",
+                y_label = "Annual heating cost per property (GBP)",
                 l_label = None                           
                 )     
         
@@ -674,8 +702,16 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         
 
         glist = [dbc.Row([
-                        dbc.Col(html.Div(["Title 1",graph1])),
-                        dbc.Col(html.Div(graph2)),
+                        dbc.Col([dbc.Stack([html.Div([f"Average annual investment requirements"],
+                                                     className='figure_title'),
+                                            invreq_popover],
+                                          direction="horizontal"),
+                                 graph1]),
+                        dbc.Col([dbc.Stack([html.Div([f"Heating cost per property (flat)"],
+                                                     className='figure_title'),
+                                            heatcost_popover],
+                                          direction="horizontal"),
+                                 graph2]),
                     ], className='figure_row'),
                 ]
         
@@ -784,4 +820,4 @@ def update_heat_gen_maps(year, scenarios, scen_options):
 
 
 if __name__ == '__main__':
-    app.run_server(host='127.0.0.1', port='8050', debug=True)
+    app.run_server(host='127.0.0.1', port='8050')

@@ -469,8 +469,10 @@ if __name__ == "__main__":
             n = "Others"   
         return n
     
-    groupbyl = {"TECHNOLOGY":lambda x: x[0:6]}
-    groupbys = {"TECHNOLOGY":groupby}
+    groupbyl = {"TECHNOLOGY":lambda x: x[0:6],
+                "REGION":lambda x: x[0:9]}
+    groupbys = {"TECHNOLOGY":groupby,
+                "REGION":lambda x: x[0:9]}
 
     
     plots = [{"gb":groupbyl,

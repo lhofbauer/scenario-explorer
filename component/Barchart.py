@@ -45,13 +45,15 @@ def ScenCompInvBarchart(id, df_inv, naming, title=None,
               "Hydrogen production","Building technologies"]
     ymax = 0
     for df in df_inv:
-        df = df.groupby("RUN",as_index=False).sum()
+        
         df = df[df['RUN'].isin(scenarios)]
         df = df.replace(naming)
         if lads:
             df = df[df['REGION'].isin(lads)]
             df["RUN"] = df["RUN"] + "<br>" + df["REGION"]
             
+        df = df.groupby("RUN",as_index=False).sum() 
+        
         fig = px.bar(df,x="RUN",y="VALUE")#color="TECHNOLOGY"
         #fig.update_layout(yaxis_range=[0,20])
         gobj.append(fig)
@@ -76,7 +78,7 @@ def ScenCompInvBarchart(id, df_inv, naming, title=None,
                 fig.add_trace(t,row=r+1, col=c+1)
             i = i+1
     
-    fig.update_yaxes(title_text="Investments (billion GBP)",col=1,row=2)
+    fig.update_yaxes(title_text=y_label,col=1,row=2)
     fig.update_yaxes(range=[0, ymax+1])
     fig.update_xaxes(tickangle=45, row=2)
 
