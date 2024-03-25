@@ -173,7 +173,7 @@ def update_response(data):
 )
 def update_scenario(scens):
     
-    if isinstance(scens,str):
+    if isinstance(scens, str):
         scenarios = [scens]
     else:
         scenarios = scens
@@ -217,10 +217,16 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
     
     scen_naming = {s['value']:s['label']['props']['children'] for s in scen_options}
     
-    scenario = scenarios[0]
-    if isinstance(lads,str):
+    # Default scenrio if cleared
+    default = ['nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO']
+    scenarios = scenarios if len(scenarios) > 0 else default
+    
+    # Check lads value and set default Hartlepool
+    if isinstance(lads, str):
         lads = [lads]
-        
+    if lads == []:
+        lads = ['Hartlepool']
+
     hover_popover_object = Sidebar.Popover('hover')  
       
     # Create graphs for the chosen tab
@@ -761,7 +767,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         
     elif tab == 'tab-3':
        
-        glist = [("Information on everything to go here.<br><br><br><br><br>"
+        glist = [("Information on everything to go here."
                  "The dashboard source code is Copyright (C) 2024 Leonhard Hofbauer, Yueh-Chin Lin, licensed under a MIT license and available here.")]
     
     
@@ -789,6 +795,10 @@ def update_heat_gen_maps(year, scenarios, scen_options):
     
     scen_naming = {s['value']:s['label']['props']['children'] for s in scen_options}
     df_gen_loc = pd.read_csv(f'{appdir}/data/plot_data_02.csv')
+
+    # Default scenrio if cleared
+    default = ['nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO']
+    scenarios = scenarios if len(scenarios) > 0 else default
     
     fig = Hexmap.GenericHexmap(
             id = "heat_generation_map",
