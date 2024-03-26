@@ -60,20 +60,40 @@ if continuous:
 cdm = ca
 
 # DEFINE OTHER PARAM
-options = [{'label': 'Base net-zero scenario',
-                             'value':'nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO'},
-                            {'label': 'High ambition scenario',
-                             'value':'nz-2045_hp-00_dh-00_lp-00_h2-00_UK|LA|SO'}]
+options_prop = [{'label': 'Flats',
+                 'value':'FL'},
+                {'label': 'Terraced',
+                 'value':'TE'},
+                {'label': 'Detached',
+                 'value':'DE'},
+                {'label': 'Semi-detached',
+                 'value':'SD'}]
+options_type = [{'label': 'Per property',
+                 'value':'prop'},
+                {'label': 'Per heat generated',
+                 'value':'heat'}]
 # create list of dropdown options including style
-heatcost_dropdown_options = [{'label':html.Span(d['label'], style={'color': '#808080',
+heatcost_prop_dropdown_options = [{'label':html.Span(d['label'],
+                                                     style={'color': '#808080',
                                           'font-size': '14px'}),
                               'value':d['value']
-                              } for d in options]
+                              } for d in options_prop]
+heatcost_type_dropdown_options = [{'label':html.Span(d['label'],
+                                                     style={'color': '#808080',
+                                          'font-size': '14px'}),
+                              'value':d['value']
+                              } for d in options_type]
 
-heatcost_dropdown = dcc.Dropdown(heatcost_dropdown_options,
-                                 options[0]['value'],
-                                 id = 'heatcost_dropdown',
-                                 clearable = False)
+heatcost_prop_dropdown = dcc.Dropdown(heatcost_prop_dropdown_options,
+                                 options_prop[0]['value'],
+                                 id = 'heatcost_prop_dropdown',
+                                 clearable = False,
+                                 className = 'heatcost_dropdowns')
+heatcost_type_dropdown = dcc.Dropdown(heatcost_type_dropdown_options,
+                                 options_type[0]['value'],
+                                 id = 'heatcost_type_dropdown',
+                                 clearable = False,
+                                 className = 'heatcost_dropdowns')
 
 
 # DEFINE LAYOUT
@@ -316,7 +336,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 df = df_gen_loc,
                 title = None,
                 zlabel = "Fraction<br>supplied by<br>technology (-)",
-                techs = ["Air-source HP", "Heat interface unit",
+                techs = ["Air-source HP", "District heating",
                  "Electric resistance heater","Biomass boiler",
                  "H2 boiler"],
                 year = 2050,
@@ -366,22 +386,26 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                                    " disaggregated based on different parts of the system.")
         content_invreq_tooltip = ("This graph shows average annual investment"
                                   " requirements for the period 2023 to 2054.")
-        content_costmap_tooltip = ("These hexmaps show the annual heating cost"
-                                   " per domestic property (taking terraced"
-                                   " houses as reference)"
-                                   " for 2050 normalized with the average cost"
-                                   " for GB in the scenario shown on the left.")
+        content_costmap_tooltip = ("These hexmaps show the annual heating system cost"
+                                   " for domestic properties, either per property"
+                                   " or per heat generated. The cost are"
+                                   " for 2050 and normalized with the average cost"
+                                   " for GB in the scenario shown on the left."
+                                   " The values include costs of building heat"
+                                   " technologies and all costs associated with"
+                                   " the supply of energy to properties,"
+                                   " including generation and distribution.")
         content_heatcost_tooltip = ("This graph shows the annual heating cost"
-                                   " per domestic property (taking terraced"
-                                   " houses as reference)"
+                                   " per domestic property (taking flats"
+                                   " as reference)"
                                    " normalized with the cost for the"
-                                   " base year period for Base net-zero scenario."
-                                   " The difference in the base year cost"
-                                   " is due to differences in cost allocation"
-                                   " across years (e.g., a faster phase out of"
-                                   " gas boilers will lead cost for stranded gas"
-                                   " network investments"
-                                   " to be allocated to years where gas is still used).")
+                                   " base year period for the Base net-zero scenario.")
+                                   # (" The difference in the base year cost"
+                                   # " is due to differences in cost allocation"
+                                   # " across years (e.g., a faster phase out of"
+                                   # " gas boilers will lead cost for stranded gas"
+                                   # " network investments"
+                                   # " to be allocated to years where gas is still used).")
         
         
         syscost_popover = hover_popover_object.create('t1-2_syscost_popover', content_syscost_tooltip,'popover_figure')
@@ -395,8 +419,19 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                  "plot_data_04_h2.csv","plot_data_04_build.csv"]
         df_inv = [pd.read_csv(f'{appdir}/data/'+ f) for f in files]
         df_cost = pd.read_csv(f'{appdir}/data/plot_data_03.csv')
-        df_hcost = pd.read_csv(f'{appdir}/data/plot_data_12.csv',
-                               index_col=["RUN","REGION","YEAR"])
+        
+        prop = "FL"
+        ty = "prop"
+        
+        if ty == "prop":
+            df_hcost = pd.read_csv(f'{appdir}/data/plot_data_11_'+prop+'.csv',
+                                   index_col=["RUN","REGION","YEAR"])
+            label = "Annual heating<br>cost per property<br>(norm.)"
+        elif ty == "heat":
+            df_hcost = pd.read_csv(f'{appdir}/data/plot_data_12_'+prop+'.csv',
+                                   index_col=["RUN","REGION","YEAR"])
+            label = "Annual heating<br>cost per heat<br>generated (norm.)"
+
         
         # normalize with GB average (except GB values)
         df_hcost[~df_hcost.index.get_level_values("REGION")
@@ -408,6 +443,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                                                                  level=(0,1)))
         df_hcost_gb = df_hcost.xs("GB",level=1)
         df_hcost_gb = df_hcost_gb/df_hcost_gb.xs((scenarios[0],2015),level=(0,1)).squeeze()
+        df_hcost_gb = df_hcost_gb[df_hcost_gb.index.get_level_values("YEAR")>=2025]
         df_hcost_gb = df_hcost_gb.reset_index()
         df_hcost = df_hcost.reset_index()
 
@@ -437,7 +473,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 df = df_hcost,
                 title = None,
                 year = 2050,
-                zlabel = "Annual heating<br>cost per property<br>(rel. to avg.)",
+                zlabel = label,
                 scenarios = scenarios,
                 naming=scen_naming,
                 range_color=[0.8,1.2])
@@ -451,6 +487,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 category="RUN",
                 scenarios = scenarios,
                 naming=scen_naming,
+                y_range = [0,df_hcost_gb["VALUE"].max()+0.05],
                 x_label = "Year",
                 y_label = "Heating cost per property (normalized)",
                 l_label = "Scenarios"                            
@@ -497,14 +534,15 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                                  graph9]),
                     ], className='figure_row'),
                 dbc.Row([
-                            dbc.Col([dbc.Stack([html.Div([f"Heating cost per property (normalized)"],
+                            dbc.Col([dbc.Stack([html.Div([f"Heating system cost (normalized) [beta]"],
                                                          className='figure_title'),
-                                                costmap_popover,html.Br(), html.Div(heatcost_dropdown)],
+                                                costmap_popover,html.Br(), html.Div(heatcost_prop_dropdown),
+                                                html.Div(heatcost_type_dropdown)],
                                               direction="horizontal"),
                                      graph3]),
                         ], className='figure_row'),
                 dbc.Row([
-                                dbc.Col([dbc.Stack([html.Div([f"Heating cost per property (normalized)"],
+                                dbc.Col([dbc.Stack([html.Div([f"Heating system cost (normalized) [beta]"],
                                                              className='figure_title'),
                                                     heatcost_popover],
                                                   direction="horizontal"),
@@ -657,7 +695,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         content_invreq_tooltip = ("This graph shows average annual investment"
                                   " requirements for the period 2023 to 2054.")
 
-        content_heatcost_tooltip = ("This graph shows the annual heating cost"
+        content_heatcost_tooltip = ("This graph shows the annual heating system cost"
                                    " per flat (as example of per property cost)."
                                    " This includes cost for heating system and"
                                    " the supply of energy. It relates to system cost"
@@ -684,8 +722,8 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                  "plot_data_04_loc_h2.csv","plot_data_04_loc_build.csv"]
         df_inv = [pd.read_csv(f'{appdir}/data/'+ f) for f in files]
         # df_cost = pd.read_csv(f'{appdir}/data/plot_data_03.csv')
-        df_hcost = pd.read_csv(f'{appdir}/data/plot_data_11n.csv')
-        
+        df_hcost = pd.read_csv(f'{appdir}/data/plot_data_11n_FL.csv')
+        df_hcost = df_hcost.loc[df_hcost["YEAR"]>=2025,:]
         # normalize with GB average (except GB values)
         
         # df_hcost[~df_hcost.index.get_level_values("REGION")
@@ -723,8 +761,10 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 scenarios = scenarios,
                 lads = lads,
                 naming=scen_naming,
+                y_range= [0, df_hcost.loc[df_hcost['RUN'].isin(scenarios) &
+                                     df_hcost['REGION'].isin(lads),"VALUE"].max()+20],
                 x_label = "Year",
-                y_label = "Annual heating cost per property (GBP)",
+                y_label = "Annual heating system cost per property (GBP)",
                 l_label = None                           
                 )     
         
@@ -737,7 +777,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                                             invreq_popover],
                                           direction="horizontal"),
                                  graph1]),
-                        dbc.Col([dbc.Stack([html.Div([f"Heating cost per property (flat)"],
+                        dbc.Col([dbc.Stack([html.Div([f"Heating system cost per property (flat) [beta]"],
                                                      className='figure_title'),
                                             heatcost_popover],
                                           direction="horizontal"),
@@ -749,9 +789,8 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         
         # - Create popover for graph titles
         
-        content_empath_tooltip = ("This graph shows CO2 emissions from the"
-                                  " energy system (with regard to the building"
-                                  " sector).")
+        content_empath_tooltip = ("This graph shows energy-related CO2 emissions"
+                                  " from the building sector.")
 
         empath_popover = hover_popover_object.create('t3-3_empath_popover', content_empath_tooltip,'popover_figure')
 
@@ -791,8 +830,9 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         
     elif tab == 'tab-3':
        
-        glist = [("Information on everything to go here."
-                 "The dashboard source code is Copyright (C) 2024 Leonhard Hofbauer, Yueh-Chin Lin, licensed under a MIT license and available here.")]
+        glist = [html.Div([("This page will contain further information on the dashboard and underlying energy model."
+                  " The dashboard and model will be published under an open license."),html.Br(), html.Br(),
+                 "The dashboard source code is Copyright (C) 2024 Leonhard Hofbauer, Yueh-Chin Lin, licensed under a MIT license."])]
     
     
     # options = [{'label':"Graph 1",
@@ -829,7 +869,7 @@ def update_heat_gen_maps(year, scenarios, scen_options):
             df = df_gen_loc,
             title = None,
             zlabel = "Fraction<br>supplied by<br>technology (-)",
-            techs = ["Air-source HP", "Heat interface unit",
+            techs = ["Air-source HP", "District heating",
               "Electric resistance heater","Biomass boiler",
               "H2 boiler"],
             year = year,
@@ -842,31 +882,51 @@ def update_heat_gen_maps(year, scenarios, scen_options):
 
 @callback(
     Output('hcost_maps', 'figure'),
-    Input('heatcost_dropdown', 'value'),
+    Input('heatcost_prop_dropdown', 'value'),
+    Input('heatcost_type_dropdown', 'value'),
     State('scenario_store','data'), 
     State('chosen_scenario_dropdown', 'options'),
 )
-def update_heatcosts_maps(year, scenarios, scen_options):
+def update_heatcosts_maps(prop, ty, scenarios, scen_options):
     
     scen_naming = {s['value']:s['label']['props']['children'] for s in scen_options}
-    df_gen_loc = pd.read_csv(f'{appdir}/data/plot_data_02.csv')
-
+    if ty == "prop":
+        df_hcost = pd.read_csv(f'{appdir}/data/plot_data_11_'+prop+'.csv',
+                               index_col=["RUN","REGION","YEAR"])
+        label = "Annual heating<br>cost per property<br>(norm.)"
+    elif ty == "heat":
+        df_hcost = pd.read_csv(f'{appdir}/data/plot_data_12_'+prop+'.csv',
+                               index_col=["RUN","REGION","YEAR"])
+        label = "Annual heating<br>cost per heat<br>generated (norm.)"
+        
     # Default scenario if cleared
     default = ['nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO']
     scenarios = scenarios if len(scenarios) > 0 else default
     
+    
+    # normalize with GB average (except GB values)
+    df_hcost[~df_hcost.index.get_level_values("REGION")
+             .str.startswith("GB")] = (df_hcost[~df_hcost
+                                                .index.get_level_values("REGION")
+                                                .str.startswith("GB")]
+                                                /df_hcost.xs((scenarios[0],
+                                                              "GB"),
+                                                             level=(0,1)))
+    df_hcost_gb = df_hcost.xs("GB",level=1)
+    df_hcost_gb = df_hcost_gb/df_hcost_gb.xs((scenarios[0],2015),level=(0,1)).squeeze()
+    df_hcost_gb = df_hcost_gb.reset_index()
+    df_hcost = df_hcost.reset_index()
+    
+
     fig = Hexmap.GenericHexmap(
-            id = "heat_generation_map",
-            df = df_gen_loc,
+            id = "hcost_maps",
+            df = df_hcost,
             title = None,
-            zlabel = "Fraction<br>supplied by<br>technology (-)",
-            techs = ["Air-source HP", "Heat interface unit",
-              "Electric resistance heater","Biomass boiler",
-              "H2 boiler"],
-            year = year,
+            year = 2050,
+            zlabel = label,
             scenarios = scenarios,
             naming=scen_naming,
-            range_color=[0,1],
+            range_color=[0.7,1.3],
             figonly=True)
 
     return fig
@@ -884,4 +944,4 @@ def update_heatcosts_maps(year, scenarios, scen_options):
 
 
 if __name__ == '__main__':
-    app.run_server(host='127.0.0.1', port='8050', debug=True)
+    app.run_server(host='127.0.0.1', port='8050')

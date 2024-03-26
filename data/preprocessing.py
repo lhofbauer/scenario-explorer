@@ -708,87 +708,89 @@ if __name__ == "__main__":
     # gdhi = gdhi.iloc[:,2:]
     # gdhi = utils.update_LADCD(gdhi,from_CD="LAD21CD",how="mean")
     
-    
-    # calculate demand
-    ecs = ["HWDDDE", "HWDDFL", "HWDDSD", "HWDDTE",
-           "SHDDDE", "SHDDFL", "SHDDSD", "SHDDTE"]
-    ecs = ["HWDDFL","SHDDFL"]
-    dem = (data[0]["SpecifiedAnnualDemand"]
-           *data[0]["SpecifiedDemandProfile"]).dropna()
-    dem = dem[dem.index.get_level_values("FUEL").str.startswith(tuple(ecs))]
-    dem = dem.reset_index().drop(["FUEL","TIMESLICE"],axis=1)
-    dem["REGION"] = dem["REGION"].str[:9]
-    dem = dem.groupby(["RUN","REGION","YEAR"]).sum()
-    
-    print(dem)
-    # get number of properties
-    pnum = pd.read_csv(dpath+'number_properties.csv',index_col=["REGION",
-                                                                 "PROPERTY_TYPE",
-                                                                 "YEAR"])
-    
-    ptd = {"TE":"Terraced",
-           "FL":"Flats",
-           "DE":"Detached",
-           "SD":"Semi-detached"}
-    pt = {ptd[ec[-2:]] for ec in ecs }
-    pnum = pnum[pnum.index.get_level_values("PROPERTY_TYPE").str.startswith(tuple(pt))]
-    pnum = pnum.groupby(["REGION","YEAR"]).sum()
-    pnum = pd.concat([pnum]*len(scenarios),
-                     keys=scenarios, names=['RUN'])
-
-
-    print(pnum)                                                          
-    cost = data[0]["DemandCost"].groupby(["RUN","REGION","FUEL","YEAR"]).sum()
-    cost = cost[cost.index.get_level_values("FUEL").str.startswith(tuple(ecs))]
-    cost = cost.reset_index().drop(["FUEL"],axis=1)
-    cost["REGION"] = cost["REGION"].str[:9]
-    cost = cost.groupby(["RUN","REGION","YEAR"]).sum()
-    print(cost)
-    # calculate cost per demand or property
-    data[0]["CostPerDomHeat"] = (cost/dem)
-    data[0]["CostPerDomHeat"] = data[0]["CostPerDomHeat"]* 10**6
-    
-    data[0]["CostPerDomProp"] = (cost/pnum) * 10**6
-    
-    agg = (cost.groupby(["RUN","YEAR"]).sum()
-           /pnum.groupby(["RUN","YEAR"]).sum()
-           * 10**6)
-    agg["REGION"] = "GB"
-    agg = agg.reset_index().set_index(["RUN","REGION","YEAR"])
-    data[0]["CostPerDomProp"] = pd.concat([data[0]["CostPerDomProp"],
-                                           agg])
-    agg = (cost.groupby(["RUN","YEAR"]).sum()
-           /dem.groupby(["RUN","YEAR"]).sum()
-           * 10**6)
-    agg["REGION"] = "GB"
-    agg = agg.reset_index().set_index(["RUN","REGION","YEAR"])
-    data[0]["CostPerDomHeat"] = pd.concat([data[0]["CostPerDomHeat"],
-                                           agg])
-    
-    print(data[0]["CostPerDomProp"])
-    data[0]["CostPerDomProp"].loc[:,"VALUE"] = data[0]["CostPerDomProp"].loc[:,"VALUE"].multiply(xscale,
-                                                                   axis=0)
-    # data[0]["CostPerDomHeat"].loc[:,"VALUE"] = data[0]["CostPerDomHeat"].loc[:,"VALUE"].multiply(xscale,
-    #                                                                axis=0)
-
-    plot_data_11 = data[0]["CostPerDomProp"].loc[data[0]["CostPerDomProp"].index.get_level_values("YEAR")<2060].reset_index()
-    plot_data_12 = data[0]["CostPerDomHeat"].loc[data[0]["CostPerDomHeat"].index.get_level_values("YEAR")<2060].reset_index()
-    
-    # model.results[0]["CostPerDomPropGDHI"] = (model.results[0]["CostPerDomProp"]
-    #                                           .divide(gdhi["2021"],level=1,axis=0)
-    #                                           .dropna())
-    # model.results[0]["GDHI"] = model.results[0]["CostPerDomPropGDHI"].copy()
-    # model.results[0]["GDHI"].loc[:,"VALUE"] = 1
-    # model.results[0]["GDHI"] = (model.results[0]["GDHI"]
-    #                             .multiply(gdhi["2021"],level=1,axis=0))
+    props = ["FL","TE","DE","SD"]
+    for p in props:
+        
+        # calculate demand
+        # ecs = ["HWDDDE", "HWDDFL", "HWDDSD", "HWDDTE",
+        #        "SHDDDE", "SHDDFL", "SHDDSD", "SHDDTE"]
+        ecs = ["HWDD"+p,"SHDD"+p]
+        dem = (data[0]["SpecifiedAnnualDemand"]
+               *data[0]["SpecifiedDemandProfile"]).dropna()
+        dem = dem[dem.index.get_level_values("FUEL").str.startswith(tuple(ecs))]
+        dem = dem.reset_index().drop(["FUEL","TIMESLICE"],axis=1)
+        dem["REGION"] = dem["REGION"].str[:9]
+        dem = dem.groupby(["RUN","REGION","YEAR"]).sum()
+        
+        print(dem)
+        # get number of properties
+        pnum = pd.read_csv(dpath+'number_properties.csv',index_col=["REGION",
+                                                                     "PROPERTY_TYPE",
+                                                                     "YEAR"])
+        
+        ptd = {"TE":"Terraced",
+               "FL":"Flats",
+               "DE":"Detached",
+               "SD":"Semi-detached"}
+        pt = {ptd[ec[-2:]] for ec in ecs }
+        pnum = pnum[pnum.index.get_level_values("PROPERTY_TYPE").str.startswith(tuple(pt))]
+        pnum = pnum.groupby(["REGION","YEAR"]).sum()
+        pnum = pd.concat([pnum]*len(scenarios),
+                         keys=scenarios, names=['RUN'])
     
     
+        print(pnum)                                                          
+        cost = data[0]["DemandCost"].groupby(["RUN","REGION","FUEL","YEAR"]).sum()
+        cost = cost[cost.index.get_level_values("FUEL").str.startswith(tuple(ecs))]
+        cost = cost.reset_index().drop(["FUEL"],axis=1)
+        cost["REGION"] = cost["REGION"].str[:9]
+        cost = cost.groupby(["RUN","REGION","YEAR"]).sum()
+        print(cost)
+        # calculate cost per demand or property
+        data[0]["CostPerDomHeat"] = (cost/dem)
+        data[0]["CostPerDomHeat"] = data[0]["CostPerDomHeat"]* 10**6
+        
+        data[0]["CostPerDomProp"] = (cost/pnum) * 10**6
+        
+        agg = (cost.groupby(["RUN","YEAR"]).sum()
+               /pnum.groupby(["RUN","YEAR"]).sum()
+               * 10**6)
+        agg["REGION"] = "GB"
+        agg = agg.reset_index().set_index(["RUN","REGION","YEAR"])
+        data[0]["CostPerDomProp"] = pd.concat([data[0]["CostPerDomProp"],
+                                               agg])
+        agg = (cost.groupby(["RUN","YEAR"]).sum()
+               /dem.groupby(["RUN","YEAR"]).sum()
+               * 10**6)
+        agg["REGION"] = "GB"
+        agg = agg.reset_index().set_index(["RUN","REGION","YEAR"])
+        data[0]["CostPerDomHeat"] = pd.concat([data[0]["CostPerDomHeat"],
+                                               agg])
+        
+        print(data[0]["CostPerDomProp"])
+        data[0]["CostPerDomProp"].loc[:,"VALUE"] = data[0]["CostPerDomProp"].loc[:,"VALUE"].multiply(xscale,
+                                                                       axis=0)
+        # data[0]["CostPerDomHeat"].loc[:,"VALUE"] = data[0]["CostPerDomHeat"].loc[:,"VALUE"].multiply(xscale,
+        #                                                                axis=0)
     
-    # save data
-    plot_data_11.to_csv(dpath+"plot_data_11.csv", index=False)
-    plot_data_11.loc[:,"REGION"] = plot_data_11.loc[:,"REGION"].map(mapping)
-    plot_data_11.to_csv(dpath+"plot_data_11n.csv", index=False)
-    
-    plot_data_12.to_csv(dpath+"plot_data_12.csv", index=False)
-    plot_data_12.loc[:,"REGION"] = plot_data_12.loc[:,"REGION"].map(mapping)
-    plot_data_12.to_csv(dpath+"plot_data_12n.csv", index=False) 
+        plot_data_11 = data[0]["CostPerDomProp"].loc[data[0]["CostPerDomProp"].index.get_level_values("YEAR")<2060].reset_index()
+        plot_data_12 = data[0]["CostPerDomHeat"].loc[data[0]["CostPerDomHeat"].index.get_level_values("YEAR")<2060].reset_index()
+        
+        # model.results[0]["CostPerDomPropGDHI"] = (model.results[0]["CostPerDomProp"]
+        #                                           .divide(gdhi["2021"],level=1,axis=0)
+        #                                           .dropna())
+        # model.results[0]["GDHI"] = model.results[0]["CostPerDomPropGDHI"].copy()
+        # model.results[0]["GDHI"].loc[:,"VALUE"] = 1
+        # model.results[0]["GDHI"] = (model.results[0]["GDHI"]
+        #                             .multiply(gdhi["2021"],level=1,axis=0))
+        
+        
+        
+        # save data
+        plot_data_11.to_csv(dpath+"plot_data_11_"+p+".csv", index=False)
+        plot_data_11.loc[:,"REGION"] = plot_data_11.loc[:,"REGION"].map(mapping)
+        plot_data_11.to_csv(dpath+"plot_data_11n_"+p+".csv", index=False)
+        
+        plot_data_12.to_csv(dpath+"plot_data_12_"+p+".csv", index=False)
+        plot_data_12.loc[:,"REGION"] = plot_data_12.loc[:,"REGION"].map(mapping)
+        plot_data_12.to_csv(dpath+"plot_data_12n_"+p+".csv", index=False) 

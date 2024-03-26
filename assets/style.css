@@ -277,9 +277,10 @@ input::placeholder {
     font-weight: 500;
   }
 
-#heatcost_dropdown{
+.heatcost_dropdowns{
   width: 250px;
   font-size: 14px;
+  margin-left: 20px;
   }
 
 #tab_area {

@@ -5,7 +5,7 @@ from dash import html, dcc
 
 
 def GenericLinechart(id, df, x, y, category, naming=None, title=None,
-                     x_label = None, y_label = None,l_label=None, 
+                     x_label = None, y_label = None,l_label=None, y_range=None,
                      scenarios = None, lads=None):
 
     df = df[df['RUN'].isin(scenarios)] if scenarios else df
@@ -19,10 +19,12 @@ def GenericLinechart(id, df, x, y, category, naming=None, title=None,
         
     fig = px.line(df, x = x, y = y,
                  color = category)
-    
+    if y_range:
+        fig.update_layout( yaxis_range=y_range)
     fig.update_layout(
                     #paper_bgcolor = 'white',
-                    #plot_bgcolor = 'white', 
+                    #plot_bgcolor = 'white',
+                    
                     yaxis_title=y_label,
                     xaxis_title=x_label,
                     legend_title_text=l_label,
