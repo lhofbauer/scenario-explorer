@@ -530,7 +530,7 @@ if __name__ == "__main__":
 
     # Data analysis element 05 –  Net zero maps
     
-    reduction_value = 0.02
+    reduction_value = 0.0001
     
     em = data[0]["AnnualEmissions"].copy()
     # divide by number of years in period to get average annual emissions
@@ -655,13 +655,29 @@ if __name__ == "__main__":
                             #zorder=zo,
                             )
     plot_data_09l = plot_data/techcaps.loc["ASHP"].mean()
-    plot_data.groupby(["RUN","TECHNOLOGY","YEAR"]).sum()
+    
+    replace = {2015:2015,
+               2022:2025,
+               2023:2025,
+               2025:2025,
+               2030:2035,
+               2035:2035,
+               2040:2045,
+               2045:2045,
+               2050:2055,
+               2055:2055}
+    # FIXME: implement weighted average
+    plot_data_09l = plot_data_09l.rename(index=replace)
+    plot_data_09l = plot_data_09l.groupby(["REGION","RUN",
+                                           "TECHNOLOGY","YEAR"]).mean()
     plot_data_09l = plot_data_09l.reset_index()
     plot_data_09l["REGION"] = plot_data_09l["REGION"].map(mapping)
     # FIXME: this is a simplified calc, might need to improve
     plot_data_09 = (plot_data.groupby(["RUN","TECHNOLOGY","YEAR"]).sum()
                     /techcaps.loc["ASHP"].mean())
-
+    plot_data_09 = plot_data_09.rename(index=replace)
+    plot_data_09 = plot_data_09.groupby(["RUN",
+                                           "TECHNOLOGY","YEAR"]).mean()
     #df = df.divide(techcaps["peakcap"],level="TECHNOLOGY")*10**6
     
     # save data
@@ -733,6 +749,7 @@ if __name__ == "__main__":
     data[0]["CostPerDomHeat"] = data[0]["CostPerDomHeat"]* 10**6
     
     data[0]["CostPerDomProp"] = (cost/pnum) * 10**6
+    
     agg = (cost.groupby(["RUN","YEAR"]).sum()
            /pnum.groupby(["RUN","YEAR"]).sum()
            * 10**6)
@@ -740,14 +757,23 @@ if __name__ == "__main__":
     agg = agg.reset_index().set_index(["RUN","REGION","YEAR"])
     data[0]["CostPerDomProp"] = pd.concat([data[0]["CostPerDomProp"],
                                            agg])
+    agg = (cost.groupby(["RUN","YEAR"]).sum()
+           /dem.groupby(["RUN","YEAR"]).sum()
+           * 10**6)
+    agg["REGION"] = "GB"
+    agg = agg.reset_index().set_index(["RUN","REGION","YEAR"])
+    data[0]["CostPerDomHeat"] = pd.concat([data[0]["CostPerDomHeat"],
+                                           agg])
+    
     print(data[0]["CostPerDomProp"])
     data[0]["CostPerDomProp"].loc[:,"VALUE"] = data[0]["CostPerDomProp"].loc[:,"VALUE"].multiply(xscale,
                                                                    axis=0)
-    data[0]["CostPerDomHeat"].loc[:,"VALUE"] = data[0]["CostPerDomHeat"].loc[:,"VALUE"].multiply(xscale,
-                                                                   axis=0)
+    # data[0]["CostPerDomHeat"].loc[:,"VALUE"] = data[0]["CostPerDomHeat"].loc[:,"VALUE"].multiply(xscale,
+    #                                                                axis=0)
 
     plot_data_11 = data[0]["CostPerDomProp"].loc[data[0]["CostPerDomProp"].index.get_level_values("YEAR")<2060].reset_index()
     plot_data_12 = data[0]["CostPerDomHeat"].loc[data[0]["CostPerDomHeat"].index.get_level_values("YEAR")<2060].reset_index()
+    
     # model.results[0]["CostPerDomPropGDHI"] = (model.results[0]["CostPerDomProp"]
     #                                           .divide(gdhi["2021"],level=1,axis=0)
     #                                           .dropna())

@@ -42,7 +42,7 @@ def ScenCompInvBarchart(id, df_inv, naming, title=None,
     
     gobj = list()
     titles = ["Power and gas networks","District heating systems",
-              "Hydrogen production","Building technologies"]
+              "Hydrogen production","Building heat and retrofit"]
     ymax = 0
     for df in df_inv:
         
@@ -58,7 +58,13 @@ def ScenCompInvBarchart(id, df_inv, naming, title=None,
         #fig.update_layout(yaxis_range=[0,20])
         gobj.append(fig)
         ymax = max(ymax,df["VALUE"].max())
-            
+    
+    if lads:
+        order = [2,1,0,3]
+        gobj = [gobj[i] for i in order]
+        titles = [titles[i] for i in order]
+        titles[0] = ""
+                
     cols = 2
     rows = 2
     specs = [[{'type': 'bar'} for c in range(cols)] for r in range(rows)]
@@ -160,7 +166,7 @@ def ScenCompGenBarchart(id, df_gen, df_cost, year, title, naming,
     
     df_gen = pd.concat([by,
                         df_gen.loc[(df_gen["YEAR"]==year)]])
-    
+
     df_gen = df_gen[df_gen['RUN'].isin(scenarios+["Base year"])]
     df_gen = df_gen.drop("YEAR", axis=1)
     
@@ -190,7 +196,7 @@ def ScenCompGenBarchart(id, df_gen, df_cost, year, title, naming,
     # cost in early years in scenarios with emission target)
     # using a scenario without emission target might be the best (?)
     # FIXME: pick appropriate scenario for base year
-    df_cost.loc[("Base year",year),:] = df_cost.loc[("nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO",2015),:]
+    df_cost.loc[("Base year",2015),:] = df_cost.loc[("nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO",2015),:]
     df_cost = df_cost[df_cost.index.get_level_values('RUN').isin(scenarios+["Base year"])]
     
     df_cost = df_cost.rename(index=naming)
@@ -198,18 +204,31 @@ def ScenCompGenBarchart(id, df_gen, df_cost, year, title, naming,
     
     fig.add_trace(
                 go.Scatter(
-                    x=df_cost.xs(year,level="YEAR").index.get_level_values("RUN"),
-                    y=df_cost.xs(year,level="YEAR")["VALUE"],
+                    x=df_cost.xs("Base year",level="RUN",
+                                 drop_level=False).index.get_level_values("RUN"),
+                    y=df_cost.xs("Base year",level="RUN")["VALUE"],
                     yaxis="y2",
                     #legendgroup="cost",
                     #legendgrouptitle=dict(text="Energy system cost"),
-                    name=str(year) + " (2015 for BY)",
+                    name="2015",
                     mode="markers",
                     marker=dict(size=12,
                                 line=dict(width=2,
                                 color='DarkSlateGrey'))
                 ))
-    
+    fig.add_trace(
+                go.Scatter(
+                    x=df_cost.xs(year,level="YEAR").index.get_level_values("RUN"),
+                    y=df_cost.xs(year,level="YEAR")["VALUE"],
+                    yaxis="y2",
+                    #legendgroup="cost",
+                    #legendgrouptitle=dict(text="Energy system cost"),
+                    name=str(year),
+                    mode="markers",
+                    marker=dict(size=12,
+                                line=dict(width=2,
+                                color='DarkSlateGrey'))
+                ))    
     df_cost = df_cost.loc[df_cost.index.get_level_values("RUN")!="Base year"].groupby("RUN").mean()
     fig.add_trace(
                 go.Scatter(

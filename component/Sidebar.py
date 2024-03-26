@@ -8,36 +8,40 @@ appdir = str(Path(__file__).parent.parent.resolve())
 #CONTENT
 content_title = 'Scenarios toolbar'
 content_description = 'Create and choose scenarios to display below.'
-content_facet_1 = 'Choose Scenarios to display'
+content_facet_1 = 'Choose scenarios to display'
 dropdown_description = 'Choose a pre-defined scenario as starting point.'
 levers_description = 'Adjust the scenario by moving the scenario levers.'
-content_facet_2 = 'Customize Scenarios'
+content_facet_2 = 'Create customized scenarios'
 content_lev_1 = 'Net-zero Target'
-content_lev_1_tooltip = 'This lever sets the year net-zero emissions are to be achieved in the UK.'
+content_lev_1_tooltip = ('This lever adjusts the year net-zero emissions'
+                         ' are to be achieved in the UK. This assumes '
+                         ' no emissions from the building sector.')
+                        
 content_lev_2 = 'Heat Pump Rollout'
 content_lev_2_tooltip = ('This lever customizes the rollout of domestic heat pumps.'
                          ' The "Fast" option assumes a roll out'
                          ' following government targets. The "Limited"'
                          ' option assumes a limit of 150k installations per year'
-                         'in 2030 and 400k in 2060.')
+                         ' in 2030 and 400k in 2060.')
 content_lev_3 = 'District Heating'
 content_lev_3_tooltip = ('This lever customizes the rollout of district heating networks.'
                          ' The "Cost-optimal" option assumes district heating is built'
                          ' where cost-optimal. The "Limited"'
-                         ' option assumes a no additional district heating'
+                         ' option assumes no additional district heating'
                          ' networks are built in future.')
 content_lev_4 = 'Hydrogen'
 content_lev_4_tooltip = ('This lever customizes the potential use of hydrogen'
                          ' for heating. The "Cost-optimal" option assumes'
                          ' hydrogen is only used where cost-optimal. The'
-                         ' "Forced" option assumes 10% and 20% of demand is met by'
+                         ' "Forced" option assumes 10% and 20% of space heat'
+                         ' and hot water demand is met by'
                          ' hydrogen boilers by 2040 and 2050, respectively.')
 content_lev_5 = 'Local pledges'
 content_lev_5_tooltip = ("This lever customizes to what extent local authorities' net-zero"
                          ' pledges are achieved. The "Not implemented" option assumes'
-                         ' pledges are not specifically followed if not aligned'
+                         ' pledges are not implemented if not aligned'
                          ' with the national target. The "Implemented"'
-                         ' option assumes the net-zero target years based'
+                         ' option assumes the local net-zero target years based'
                          ' on local authority pledges are achieved.')
 
 #POPOVER FOR LEVERS
@@ -75,7 +79,7 @@ lever5_popover = hover_popover_object.create('lever5_popover', content_lev_5_too
 predef_scenarios = [{'label': 'Base net-zero scenario',
                      'value':'nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO'},
                     {'label': 'High ambition scenario',
-                     'value':'nz-2045_hp-00_dh-00_lp-01_h2-00_UK|LA|SO'}]
+                     'value':'nz-2045_hp-00_dh-00_lp-00_h2-00_UK|LA|SO'}]
 # create list of dropdown options including style
 options = [{'label':html.Span(d['label'], style={'color': '#808080',
                                           'font-size': '14px'}),
@@ -140,7 +144,7 @@ def sidebar():
                       placeholder = 'Scenario name'),
             html.Div([html.Div('', id = 'scenario_creation_response'),
                       html.Button(id = 'submit_button', n_clicks = 0,
-                                  children = 'Create')],
+                                  children = 'Create & Display')],
                                   style = {'display':'flex', 
                                            'flex-direction': 'column',
                                            'align-items':'center',

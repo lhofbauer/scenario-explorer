@@ -12,7 +12,7 @@ import time
 appdir = str(Path(__file__).parent.resolve())
 
 app = Dash(__name__,
-           title = 'Energy Transition Scenario Explorer',
+           title = 'Energy Transition Scenario Explorer [ALPHA VERSION]',
            update_title = "Updating ...",
            external_stylesheets = [dbc.themes.COSMO],
            suppress_callback_exceptions = True)
@@ -58,6 +58,22 @@ if continuous:
 
 # cdm = utils.get_colour_map(palette="tol-light")
 cdm = ca
+
+# DEFINE OTHER PARAM
+options = [{'label': 'Base net-zero scenario',
+                             'value':'nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO'},
+                            {'label': 'High ambition scenario',
+                             'value':'nz-2045_hp-00_dh-00_lp-00_h2-00_UK|LA|SO'}]
+# create list of dropdown options including style
+heatcost_dropdown_options = [{'label':html.Span(d['label'], style={'color': '#808080',
+                                          'font-size': '14px'}),
+                              'value':d['value']
+                              } for d in options]
+
+heatcost_dropdown = dcc.Dropdown(heatcost_dropdown_options,
+                                 options[0]['value'],
+                                 id = 'heatcost_dropdown',
+                                 clearable = False)
 
 
 # DEFINE LAYOUT
@@ -124,10 +140,12 @@ def update_dropdown(nz, hp, dh, h2, lp, scen):
 # update scenario list with new scenarios
 @callback(
     Output('chosen_scenario_dropdown', 'options'),
+    Output('chosen_scenario_dropdown', 'value'),
     Output('scenario_creation_response','children'),
     Output('response_store','data'),
     Input('submit_button','n_clicks'),
     State('chosen_scenario_dropdown', 'options'),
+    State('chosen_scenario_dropdown', 'value'),
     State('nz_slider', 'value'),
     State('hp_slider','value'),
     State('dh_slider', 'value'),
@@ -135,24 +153,31 @@ def update_dropdown(nz, hp, dh, h2, lp, scen):
     State('lp_slider', 'value'),
     State('scenario_name_field', 'value'),
 )
-def update_scenario_list(count, scens, nz, hp, dh, h2, lp, name):
+def update_scenario_list(count, scens, ch_scens, nz, hp, dh, h2, lp, name):
     response = ''
     if name == '':
         name = 'Scenario '+str(count)
     exscen = [s['value'] for s in scens]
 
     newscen = f'nz-{nz}_hp-{hp:02d}_dh-{dh:02d}_lp-{lp:02d}_h2-{h2:02d}_UK|LA|SO'
-    
+    chosen_scens = list()
     if  newscen not in exscen:    
         response = 'Scenario added to list.'
         scens.append({'label': html.Span(children=name,
                                          style={'color': '#808080',
                                                 'font-size': '14px'}),
                       'value': newscen})
+        
+        if isinstance(ch_scens, str):
+            chosen_scens = [ch_scens, newscen]
+        else:
+            chosen_scens = ch_scens + [newscen]
+        
+    
     elif newscen in exscen and count > 0:
         response = 'Scenario already exists.' 
         
-    return scens, response, response
+    return scens,chosen_scens, response, response
 
 # the scenario creation response fades out
 @callback(
@@ -337,8 +362,8 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
     elif tab == 'tab-1' and subtab_1 == 'subtab-1-2':
         
         content_syscost_tooltip = ("This graph shows the total annual energy system cost"
-                                   " (for meeting the building sector demand)"
-                                   " split based on different parts of the system.")
+                                   " (for meeting the building sector energy demands)"
+                                   " disaggregated based on different parts of the system.")
         content_invreq_tooltip = ("This graph shows average annual investment"
                                   " requirements for the period 2023 to 2054.")
         content_costmap_tooltip = ("These hexmaps show the annual heating cost"
@@ -370,7 +395,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                  "plot_data_04_h2.csv","plot_data_04_build.csv"]
         df_inv = [pd.read_csv(f'{appdir}/data/'+ f) for f in files]
         df_cost = pd.read_csv(f'{appdir}/data/plot_data_03.csv')
-        df_hcost = pd.read_csv(f'{appdir}/data/plot_data_11.csv',
+        df_hcost = pd.read_csv(f'{appdir}/data/plot_data_12.csv',
                                index_col=["RUN","REGION","YEAR"])
         
         # normalize with GB average (except GB values)
@@ -474,7 +499,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 dbc.Row([
                             dbc.Col([dbc.Stack([html.Div([f"Heating cost per property (normalized)"],
                                                          className='figure_title'),
-                                                costmap_popover],
+                                                costmap_popover,html.Br(), html.Div(heatcost_dropdown)],
                                               direction="horizontal"),
                                      graph3]),
                         ], className='figure_row'),
@@ -490,12 +515,11 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         
     elif tab == 'tab-1' and subtab_1 == 'subtab-1-3':
         
-        content_empath_tooltip = ("This graph shows CO2 emissions from the"
-                                  " energy system (with regard to the building"
-                                  " sector).")
+        content_empath_tooltip = ("This graph shows energy-related CO2 emissions"
+                                  " from the building sector.")
         content_nymap_tooltip = ("These hexmaps show the year local authorities"
-                                 " reach net-zero emissions (assumed to be"
-                                 " <2 % of base year emissions)")
+                                 " reach net-zero emissions in the building sector"
+                                 " (assumed to imply no emission from the sector)")
 
         
         
@@ -524,7 +548,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 id = "net-zero_map",
                 df = df_em_loc,
                 title = None,
-                zlabel = "Year of 98%<br> emission<br> reduction",
+                zlabel = "Year of 100%<br> emission<br> reduction",
                 scenarios = scenarios,
                 naming=scen_naming,
                 range_color=[2025,2060])
@@ -683,7 +707,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 id = "heat_inv_comp",
                 df_inv = df_inv,
                 title = None,
-                y_label= "Investments (million GBP)",
+                y_label= "Investment requirements (million GBP)",
                 scenarios = scenarios,
                 lads = lads,
                 naming = scen_naming)
@@ -816,6 +840,36 @@ def update_heat_gen_maps(year, scenarios, scen_options):
 
     return fig
 
+@callback(
+    Output('hcost_maps', 'figure'),
+    Input('heatcost_dropdown', 'value'),
+    State('scenario_store','data'), 
+    State('chosen_scenario_dropdown', 'options'),
+)
+def update_heatcosts_maps(year, scenarios, scen_options):
+    
+    scen_naming = {s['value']:s['label']['props']['children'] for s in scen_options}
+    df_gen_loc = pd.read_csv(f'{appdir}/data/plot_data_02.csv')
+
+    # Default scenario if cleared
+    default = ['nz-2050_hp-00_dh-00_lp-00_h2-00_UK|LA|SO']
+    scenarios = scenarios if len(scenarios) > 0 else default
+    
+    fig = Hexmap.GenericHexmap(
+            id = "heat_generation_map",
+            df = df_gen_loc,
+            title = None,
+            zlabel = "Fraction<br>supplied by<br>technology (-)",
+            techs = ["Air-source HP", "Heat interface unit",
+              "Electric resistance heater","Biomass boiler",
+              "H2 boiler"],
+            year = year,
+            scenarios = scenarios,
+            naming=scen_naming,
+            range_color=[0,1],
+            figonly=True)
+
+    return fig
 
 
 # @callback(
@@ -830,4 +884,4 @@ def update_heat_gen_maps(year, scenarios, scen_options):
 
 
 if __name__ == '__main__':
-    app.run_server(host='127.0.0.1', port='8050')
+    app.run_server(host='127.0.0.1', port='8050', debug=True)
