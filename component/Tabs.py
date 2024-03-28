@@ -3,8 +3,6 @@ import json
 from pathlib import Path
 import dash_bootstrap_components as dbc
 
-
-
 appdir = str(Path(__file__).parent.parent.resolve())
 
 # STYLE 
