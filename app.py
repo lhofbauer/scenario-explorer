@@ -4,6 +4,7 @@ from component.Chart import *
 from component.Map import *
 from component.Navigation import *
 from component.StyleDataLoader import *
+from component.FigureGrid import *
 from component.Sidebar import Popover
 import dash_bootstrap_components as dbc
 from pathlib import Path
@@ -197,7 +198,8 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         df_inst = pd.read_csv(f'{appdir}/data/plot_data_09.csv')
         df_gen_loc = pd.read_csv(f'{appdir}/data/plot_data_02.csv')
         
-        year = 2050        
+        year = 2050       
+        """ 
         gencomp_popover = Popover.hover('t1-1_gencomp_popover', 
                                         content['gencomp_tooltip'].format(year = year),
                                          'popover_figure')
@@ -205,7 +207,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                                        content['hpinst_tooltip'],'popover_figure')
         genmap_popover = Popover.hover('t1-1_genmap_popover', 
                                        content['genmap_tooltip'],'popover_figure')
-
+        """
         # Load the style data for the colormap
         style_loader = ColorMapStyle()
         cdm = style_loader.construct_cdm()
@@ -256,6 +258,30 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                              className = 'slider'),
                     ])
         
+        glist = FigureGrid.create([
+            {'title':f"Heat generation in {year}",
+             'popover':{'id':'t1-1_gencomp_popover',
+                        'tooltip': content['gencomp_tooltip'].format(year = year),
+                        'className':'popover_figure'
+                        },
+            'graph':graph6
+            },
+            {'title':f"Heat pump installations",
+             'popover':{'id':'t1-1_hpinst_popover',
+                        'tooltip': content['hpinst_tooltip'],
+                        'className':'popover_figure'
+                        },
+            'graph':graph10
+            },
+            {'title':f"Heat generation across GB",
+             'popover':{'id':'t1-1_genmap_popover',
+                        'tooltip': content['genmap_tooltip'],
+                        'className':'popover_figure'
+                        },
+            'graph':graph2
+            },
+        ])
+        """
         glist = [dbc.Row([
                         dbc.Col([dbc.Stack([html.Div([f"Heat generation in {year}"],
                                                      className='figure_title'),
@@ -274,10 +300,11 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                                   direction="horizontal"),
                           dcc.Loading(html.Div(graph2))])
                          ],className='figure_row')
-                    
+        
 
                         # dcc.Loading(dbc.Col(html.Div(graph2)))],
                  ]
+        """
            
     elif tab == 'tab-1' and subtab_1 == 'subtab-1-2':
         
