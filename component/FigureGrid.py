@@ -15,7 +15,7 @@ class FigureGrid:
           ], direction = 'horizontal'),
           f['facet'],
           dcc.Loading(f['graph']) if f['facet'] is not None else f['graph']],  
-          className = 'figure_row')
+          className = 'figure_col')
 
         for f in figures]
 
@@ -25,7 +25,7 @@ class FigureGrid:
     row_num = len(columns_per_row)
     grid_layout = html.Div(children = [])
     for i in range(row_num):
-      grid_layout.children.append(dbc.Row(children = []))
+      grid_layout.children.append(dbc.Row(children = [], className = 'figure_row'))
       print (len(grid_layout.children))
       for j in range(columns_per_row[i]):
         grid_layout.children[i].children.append(figures[figure_count])

@@ -470,7 +470,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
             'graph':graph2,
             },
         ],
-        columns_per_row = '2'
+        columns_per_row = '1 1'
         )
 
     
@@ -485,13 +485,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         
         # - Create popover for graph titles
         year = 2050
-        gencomp_popover = Popover.hover('t2-1_gencomp_popover', 
-                                        content['local_gencomp_tooltip'],
-                                        'popover_figure')
-        hpinst_popover = Popover.hover('t2-1_hpinst_popover',
-                                        content['local_hpinst_tooltip'],
-                                        'popover_figure')
- 
+
         # Load the style data for the colormap
         style_loader = ColorMapStyle()
         cdm = style_loader.construct_cdm()
@@ -521,31 +515,28 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 l_label = None                            
                 )
         
-        glist = [dbc.Row([
-                        dbc.Col([dbc.Stack([html.Div([f"Heat generation in {year}"],
-                                                     className='figure_title'),
-                                            gencomp_popover],
-                                          direction="horizontal"),
-                                 graph6]),
-                        dbc.Col([dbc.Stack([html.Div([f"Heat pump installations"],
-                                                     className='figure_title'),
-                                            hpinst_popover],
-                                          direction="horizontal"),
-                                 graph10]),
-                    ], className='figure_row'),
-
-
-
-                 ]
+        glist = FigureGrid.create([
+            {'title': f"Heat generation in {year}",
+             'popover':{'id':'t2-1_gencomp_popover',
+                        'tooltip': content['local_gencomp_tooltip'],
+                        'className':'popover_figure'
+                        },
+            'facet':None,
+            'graph':graph6,
+            },
+            {'title': "Heat pump installations",
+             'popover':{'id':'t2-1_hpinst_popover',
+                        'tooltip': content['local_hpinst_tooltip'],
+                        'className':'popover_figure'
+                        },
+            'facet':None,
+            'graph':graph10,
+            },
+        ],
+        columns_per_row = '2'
+        )
 
     elif tab == 'tab-2' and subtab_2 == 'subtab-2-2':
-    
-        invreq_popover = Popover.hover('t2-2_invreq_popover', 
-                                       content["local_invreq_tooltip"],
-                                       'popover_figure')  
-        heatcost_popover = Popover.hover('t2-2_heatcost_popover', 
-                                        content["local_heatcost_tooltip"],
-                                        'popover_figure')
 
         files = ["plot_data_04_loc_net.csv","plot_data_04_loc_dh.csv",
                  "plot_data_04_loc_h2.csv","plot_data_04_loc_build.csv"]
@@ -579,30 +570,32 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 y_label = "Annual heating system cost per property (GBP)",
                 l_label = None                           
                 )     
-        
-
-        
-
-        glist = [dbc.Row([
-                        dbc.Col([dbc.Stack([html.Div([f"Average annual investment requirements"],
-                                                     className='figure_title'),
-                                            invreq_popover],
-                                          direction="horizontal"),
-                                 graph1]),
-                        dbc.Col([dbc.Stack([html.Div([f"Heating system cost per property (flat) [beta]"],
-                                                     className='figure_title'),
-                                            heatcost_popover],
-                                          direction="horizontal"),
-                                 graph2]),
-                    ], className='figure_row'),
-                ]
+     
+        glist = FigureGrid.create([
+            {'title': "Average annual investment requirements",
+             'popover':{'id':'t2-2_invreq_popover',
+                        'tooltip': content["local_invreq_tooltip"],
+                        'className':'popover_figure'
+                        },
+            'facet':None,
+            'graph':graph1,
+            },
+            {'title': "Heating system cost per property (flat) [beta]",
+             'popover':{'id':'t2-2_heatcost_popover',
+                        'tooltip': content["local_heatcost_tooltip"],
+                        'className':'popover_figure'
+                        },
+            'facet':None,
+            'graph':graph2,
+            },
+        ],
+        columns_per_row = '2'
+        )
         
     elif tab == 'tab-2' and subtab_2 == 'subtab-2-3':
         
         # - Create popover for graph titles
-        empath_popover = Popover.hover('t3-3_empath_popover', 
-                                       content['local_empath_tooltip'],
-                                       'popover_figure')        
+            
         df_em = pd.read_csv(f'{appdir}/data/plot_data_10_loc.csv')
         
         graph1 = Chart.GenericLinechart(
@@ -620,16 +613,21 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 l_label = "Scenarios"                            
                 )
             
-        glist = [dbc.Row([
-                            dbc.Col([dbc.Stack([html.Div([f"Energy-related CO2 emissions"],
-                                                         className='figure_title'),
-                                                empath_popover],
-                                              direction="horizontal"),
-                                     graph1]),
-                            dbc.Col([]),
-                        ], className='figure_row'),
-                 
-                ]
+  
+        glist = FigureGrid.create([
+            {'title': "Energy-related CO2 emissions",
+             'popover':{'id':'t3-3_empath_popover',
+                        'tooltip': content["local_empath_tooltip"],
+                        'className':'popover_figure'
+                        },
+            'facet':None,
+            'graph':graph1,
+            },
+        ],
+        columns_per_row = '1'
+        )
+
+
         
     elif tab == 'tab-3':
        
