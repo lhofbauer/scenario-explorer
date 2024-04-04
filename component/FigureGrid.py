@@ -1,4 +1,4 @@
-from dash import Dash, html, dcc, callback, Output, Input, State
+from dash import html, dcc
 import dash_bootstrap_components as dbc
 from component.Sidebar import Popover
 
@@ -26,7 +26,6 @@ class FigureGrid:
     grid_layout = html.Div(children = [])
     for i in range(row_num):
       grid_layout.children.append(dbc.Row(children = [], className = 'figure_row'))
-      print (len(grid_layout.children))
       for j in range(columns_per_row[i]):
         grid_layout.children[i].children.append(figures[figure_count])
         figure_count += 1

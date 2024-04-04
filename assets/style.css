@@ -188,13 +188,17 @@ input::placeholder {
   margin-bottom: 10px;
 }
 
-#scenario_creation_response {
+#scenario_creation_response, #scenario_chosen_response {
   font-family: Roboto;
   height: 20px;
   font-size: 14px;
   color: #66c2a5;
   margin-left: 20px;
   display: flex;
+}
+
+#scenario_chosen_response {
+  color: red
 }
 
 #dropdown_component {
@@ -251,11 +255,13 @@ input::placeholder {
 
 .figure_title  {
     font-weight: 700;
+    font-family: Roboto;
     color: #777777;
     text-align: center;
     font-size: 18px;
     padding-top: 20px;
     padding-bottom: 20px;
+    margin-left: 20px;
     }
 
 .popover_figure {

@@ -52,11 +52,8 @@ geojson = mapdata.__geo_interface__
 class Map:
     @staticmethod
     def GenericHexmap(id, df,  scenarios, techs=None, year= None, title=None,
-                    zlabel=None,
-                    naming=None,
-                    style = None,
-                    range_color=None,
-                    figonly=False):
+                    zlabel=None, naming=None, range_color=None,
+                    figonly=False, textangle = None):
 
         df = df[df['RUN'].isin(scenarios)] if scenarios else df
         df = df[(df['YEAR'] == year)] if year else df
@@ -95,6 +92,7 @@ class Map:
             fig = make_subplots(rows=rows, cols=cols,specs=specs,
                                 horizontal_spacing = 0,vertical_spacing = 0,
                                 column_titles=scenarios , row_titles=None)
+        
             i=0
             for c in range(cols):
                 fig.add_trace(gobj[i]["data"][0],row=1, col=c+1)
@@ -109,7 +107,7 @@ class Map:
                                 cmax=range_color[1] if range_color else None)
             fig.update_layout(margin=dict(l=20, r=20, t=20, b=20),
                             height=400)
-
+ 
         else:
             
             df = df[df['TECHNOLOGY'].isin(techs)]
@@ -160,7 +158,7 @@ class Map:
             fig.update_layout(margin=dict(l=20, r=20, t=20, b=20),
                             height = 400+(len(scenarios)-1)*100)
 
-        
+
         if figonly:
             return fig
         
@@ -169,14 +167,13 @@ class Map:
             dcc.Graph(id = id, 
                     figure = fig,
                     config={'scrollZoom':False,
-                            'displaylogo':False})
-                    # style = {'width': '155vh', 'height':'85vh'} 
-                    # if style == None else style)
+                            'displaylogo':False}),
+                    style = {'margin-top':'20px'} 
         )
 
     @staticmethod
-    def LongFormHexmap(id, path, title, zlabel, scenario = None, sex = None, 
-                    x_label = None, y_label = None, style = None):
+    def LongFormHexmap(id, path,  zlabel, title=None, scenario = None, sex = None, 
+                    x_label = None, y_label = None):
         raw_df = pd.read_csv(path)
         df = raw_df.copy()
         df = df[df['RUN'] == scenario] if scenario else df
@@ -196,7 +193,8 @@ class Map:
         
         return html.Div(
             dcc.Graph(id = id, 
-                    figure = fig, )
+                    figure = fig),
+            style = {'margin-top':'20px'} 
         )
 
 

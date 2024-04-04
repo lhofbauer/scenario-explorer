@@ -14,6 +14,7 @@
     "local_invreq_tooltip": "This graph shows average annual investment requirements for the period 2023 to 2054.",
     "local_heatcost_tooltip": "This graph shows the annual heating system cost per flat (as example of per property cost). This includes cost for heating system and the supply of energy. It relates to system cost and does not necessarily directly correlate with price/cost paid by households (e.g., it does not include margins of power producers). The difference in the base year cost across the same LAD but different scenarios is due to differences in cost allocation across years (e.g., a faster phase out of gas boilers will lead to cost for stranded gas network investments to be allocated to years where gas is still used).",
     "local_empath_tooltip" : "This graph shows energy-related CO2 emissions from the building sector.",
+    "year_slider_tooltip" : "Year to be shown.",
     "help_information": 
     [
         "This page will contain further information on the dashboard and underlying energy model.",

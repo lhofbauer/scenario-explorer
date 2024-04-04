@@ -8,9 +8,9 @@ import json
 
 class Chart:
     @staticmethod
-    def LongFormBarchart(id, path, title, x, y, category,
+    def LongFormBarchart(id, path, x, y, category,
                         x_label = None, y_label = None, 
-                        scenario = None, sex = None):
+                        scenario = None, sex = None, title = None):
         raw_df = pd.read_csv(path)
         df = raw_df[raw_df['RUN'] == scenario] if scenario else raw_df
         fig = px.bar(df, x = x, y = y,  
@@ -135,9 +135,9 @@ class Chart:
 
 
     @staticmethod
-    def ScenCompGenBarchart(id, df_gen, df_cost, year, title, naming,
+    def ScenCompGenBarchart(id, df_gen, df_cost, year, naming,
                             x_label = None, y_label = None, 
-                            scenarios = None, colormap = None,
+                            scenarios = None, colormap = None, title = None,
                             ):
 
         by = df_gen.loc[(df_gen["YEAR"]==2015)&
@@ -255,9 +255,9 @@ class Chart:
         )
 
     @staticmethod
-    def ScenLocalCompGenBarchart(id, df_gen, lads, year, title, naming,
+    def ScenLocalCompGenBarchart(id, df_gen, lads, year, naming,
                             x_label = None, y_label = None, 
-                            scenarios = None, colormap = None,
+                            scenarios = None, colormap = None, title = None
                             ):
 
         by = df_gen.loc[(df_gen["YEAR"]==2015)&

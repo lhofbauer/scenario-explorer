@@ -1,5 +1,6 @@
-from dash import Dash, html, dcc, callback, Output, Input, State
+from dash import Dash, html, dcc, callback, Output, Input, State, no_update
 from component import Sidebar, Tabs
+from component.Filter import *
 from component.Chart import *
 from component.Map import *
 from component.Navigation import *
@@ -37,7 +38,8 @@ app.layout = html.Div([
 
 # DEFINE OTHER PARAM
 # - properties for heatcost dropdowns
-heatcost_options_prop = [{'label': 'Flats',
+heatcost_options_prop = [
+                {'label': 'Flats',
                  'value':'FL'},
                 {'label': 'Terraced',
                  'value':'TE'},
@@ -45,7 +47,8 @@ heatcost_options_prop = [{'label': 'Flats',
                  'value':'DE'},
                 {'label': 'Semi-detached',
                  'value':'SD'}]
-heatcost_options_type = [{'label': 'Per property',
+heatcost_options_type = [
+                {'label': 'Per property',
                  'value':'prop'},
                 {'label': 'Per heat generated',
                  'value':'heat'}]
@@ -102,8 +105,11 @@ def update_dropdown(nz, hp, dh, h2, lp, scen):
 def update_scenario_list(count, scens, ch_scens, nz, hp, dh, h2, lp, name):
     response = ''
     if name == '':
-        name = 'Scenario '+str(count)
+        name = 'Scenario '+ str(count)
     exscen = [s['value'] for s in scens]
+
+    if len(name) > 24:
+        return no_update, no_update, no_update, no_update
 
     newscen = f'nz-{nz}_hp-{hp:02d}_dh-{dh:02d}_lp-{lp:02d}_h2-{h2:02d}_UK|LA|SO'
     chosen_scens = list()
@@ -123,7 +129,18 @@ def update_scenario_list(count, scens, ch_scens, nz, hp, dh, h2, lp, name):
     elif newscen in exscen and count > 0:
         response = 'Scenario already exists.' 
         
-    return scens,chosen_scens, response, response
+    return scens, chosen_scens, response, response
+
+# Validation message for name
+@callback(
+    Output('scenario_creation_response','children', allow_duplicate = True),
+    Input('scenario_name_field', 'value'),
+    prevent_initial_call = True
+)
+def update_response(name):
+    if len(name) > 24:
+        return "No more than 24 characters"
+
 
 # the scenario creation response fades out
 @callback(
@@ -140,16 +157,24 @@ def update_response(data):
 # update chosen scenarios if dropdown changed
 @callback(
     Output('scenario_store', 'data'),
+    Output('scenario_chosen_response', 'children'),
     Input('chosen_scenario_dropdown','value'),
 )
 def update_scenario(scens):
     
+    #if type(scens) == list and len(scens) > 5:
+    response = 'Please select less than 6 scenarios'
+    #    return no_update, response
+
     if isinstance(scens, str):
         scenarios = [scens]
     else:
         scenarios = scens
-    
-    return scenarios
+    print (scenarios)
+    if len(scenarios) > 5:
+        return no_update, response
+    else:
+        return scenarios, None
 
     
 # Define callback for authority selection in the local view
@@ -171,7 +196,7 @@ def collapse_dropdown(click):
     Input('local_auth_search','value'),
     State('chosen_scenario_dropdown', 'options')
 )
-def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
+def update_graphs(scenarios, tab, subtab_1, subtab_2, lads, scen_options):
     # - Create popover for graph titles
     # -- Load tooltip data
     with open(f'{appdir}/content/figures.json') as file:
@@ -205,7 +230,6 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         cdm = style_loader.construct_cdm()
         graph6 = Chart.ScenCompGenBarchart(
                 id = "heat_gen_cost_comp",
-                title=None,#f"Heat generation in {year}",,
                 df_gen = df_gen,
                 df_cost = df_cost,
                 year = year,
@@ -216,7 +240,6 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         graph10 = Chart.GenericLinechart(
                 id = 'hp_installations',
                 df = df_inst,
-                title=None,
                 x="YEAR",
                 y="VALUE",
                 category="RUN",
@@ -229,7 +252,6 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
         graph2 = Map.GenericHexmap(
                 id = "heat_generation_map",
                 df = df_gen_loc,
-                title = None,
                 zlabel = "Fraction<br>supplied by<br>technology (-)",
                 techs = ["Air-source HP", "District heating",
                  "Electric resistance heater","Biomass boiler",
@@ -239,17 +261,11 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 naming=scen_naming,
                 range_color=[0,1])
         
-        marks ={y:str(y) for y in range(2025,2056,5)}
-        yslider_popover = Popover.hover('yslider1_popover', 
-                                        'Year to be shown.')
-        yslider = html.Div([   
-                    html.Div(['Year', yslider_popover], className = 'facet_item_name'),
-                    dcc.Slider(min = 2025, max = 2055, step = None, marks = marks,
-                             value = 2050,
-                             id= 'year_slider',
-                             className = 'slider'),
-                    ])
-        
+
+        yslider = Filter.YearSlider(2025, 2055, 5, 'year_slider', 2050,
+                                    tooltip = 'Year to be shown.',
+                                    className = 'slider')
+
         glist = FigureGrid.create([
             {'title':f"Heat generation in {year}",
              'popover':{'id':'t1-1_gencomp_popover',
@@ -323,57 +339,37 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
                 year = 2050,
                 scenarios = scenarios,
                 naming = scen_naming,
-                title = None,
                 z_label = "Sector",
                 y_label = "Total system cost (billion GBP)")
            
         graph9 = Chart.ScenCompInvBarchart(
                 id = "heat_inv_comp",
                 df_inv = df_inv,
-                title = None,
                 y_label= "Investments (billion GBP)",
                 scenarios = scenarios,
                 naming = scen_naming)
         
         # Create dropdowns for graph3
-        heatcost_prop_dropdown_options = [{'label':html.Span(d['label'],
-                                                            style={'color': '#808080',
-                                                                   'font-size': '14px'}),
-                                           'value':d['value']
-                                        } for d in heatcost_options_prop]
-        
-        heatcost_type_dropdown_options = [{'label':html.Span(d['label'],
-                                                            style={'color': '#808080',
-                                                                   'font-size': '14px'}),
-                                           'value':d['value']
-                                    } for d in heatcost_options_type]
+        heatcost_prop_dropdown = Filter.Dropdown(heatcost_options_prop, 
+                                                 'heatcost_prop_dropdown',
+                                                 className = 'heatcost_dropdowns')
+        heatcost_type_dropdown = Filter.Dropdown(heatcost_options_type, 
+                                                 'heatcost_type_dropdown',
+                                                 className = 'heatcost_dropdowns')
 
-        heatcost_prop_dropdown = dcc.Dropdown(heatcost_prop_dropdown_options,
-                                        heatcost_options_prop[0]['value'],
-                                        id = 'heatcost_prop_dropdown',
-                                        clearable = False,
-                                        className = 'heatcost_dropdowns')
-        
-        heatcost_type_dropdown = dcc.Dropdown(heatcost_type_dropdown_options,
-                                        heatcost_options_type[0]['value'],
-                                        id = 'heatcost_type_dropdown',
-                                        clearable = False,
-                                        className = 'heatcost_dropdowns')
-        
         graph3 = Map.GenericHexmap(
                 id = "hcost_maps",
                 df = df_hcost,
-                title = None,
                 year = 2050,
                 zlabel = label,
                 scenarios = scenarios,
                 naming=scen_naming,
-                range_color=[0.8,1.2])
+                range_color=[0.8,1.2],
+                textangle= len(scenarios) * 15)
         
         graph4 = Chart.GenericLinechart(
                 id = 'hcost_path',
                 df = df_hcost_gb,
-                title=None,
                 x="YEAR",
                 y="VALUE",
                 category="RUN",
@@ -419,7 +415,7 @@ def update_graphs(scenarios, tab, subtab_1,subtab_2, lads, scen_options):
             'facet':None,
             'graph':graph4,
             },
-        ], columns_per_row = '2 2')
+        ], columns_per_row = '2 1 1')
 
                 
     elif tab == 'tab-1' and subtab_1 == 'subtab-1-3':
