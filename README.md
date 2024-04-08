@@ -1,0 +1,106 @@
+# Chart Class and Static Methods
+
+This markdown file provides a detailed overview of the `Chart` class and its static methods, which are used for generating various types of charts using Plotly and Dash components.
+
+## `Chart` Class
+
+The `Chart` class serves as a utility for creating different types of charts commonly used in data visualization tasks. It contains several static methods, each tailored for specific chart types and data formats.
+
+## Static Methods
+
+### `LongFormBarchart`
+
+This method generates a bar chart using long-form data, which is typically stored in a CSV file. It allows for easy comparison of data across different categories.
+
+- **Parameters:**
+  - `id`: ID of the HTML element where the chart will be rendered.
+  - `path`: Path to the CSV file containing the data.
+  - `x`: Column name for the x-axis.
+  - `y`: Column name for the y-axis.
+  - `category`: Column name for the category (used for color differentiation).
+  - `x_label` (optional): Label for the x-axis.
+  - `y_label` (optional): Label for the y-axis.
+  - `scenario` (optional): Filter for specific scenarios in the data.
+  - `sex` (optional): Sex label for the legend.
+  - `title` (optional): Title of the chart.
+
+### `ScenCompInvBarchart`
+
+This method generates a bar chart for comparing scenarios, focusing on investment-related data. It aggregates and visualizes investment data across different scenarios.
+
+- **Parameters:**
+  - `id`: ID of the HTML element where the chart will be rendered.
+  - `df_inv`: DataFrame containing investment data.
+  - `naming`: Dictionary for renaming data categories.
+  - `title` (optional): Title of the chart.
+  - `x_label` (optional): Label for the x-axis.
+  - `y_label` (optional): Label for the y-axis.
+  - `z_label` (optional): Label for the z-axis.
+  - `scenarios` (optional): List of scenarios to include in the comparison.
+  - `lads` (optional): List of local areas or regions.
+
+### `ScenCompCostBarchart`
+
+This method generates a bar chart for comparing scenarios based on costs. It visualizes cost-related data across different scenarios and years.
+
+- **Parameters:**
+  - `id`: ID of the HTML element where the chart will be rendered.
+  - `df_cost`: DataFrame containing cost data.
+  - `year`: Year of interest for cost comparison.
+  - `scenarios`: List of scenarios to include in the comparison.
+  - `naming`: Dictionary for renaming data categories.
+  - `title` (optional): Title of the chart.
+  - `x_label` (optional): Label for the x-axis.
+  - `y_label` (optional): Label for the y-axis.
+  - `z_label` (optional): Label for the z-axis.
+
+### `ScenCompGenBarchart`
+
+This method generates a bar chart for comparing scenarios based on energy generation. It visualizes energy generation data across different scenarios.
+
+- **Parameters:**
+  - `id`: ID of the HTML element where the chart will be rendered.
+  - `df_gen`: DataFrame containing energy generation data.
+  - `df_cost`: DataFrame containing cost data.
+  - `year`: Year of interest for cost comparison.
+  - `naming`: Dictionary for renaming data categories.
+  - `x_label` (optional): Label for the x-axis.
+  - `y_label` (optional): Label for the y-axis.
+  - `scenarios` (optional): List of scenarios to include in the comparison.
+  - `colormap` (optional): Color map for distinguishing different technologies.
+  - `title` (optional): Title of the chart.
+
+### `ScenLocalCompGenBarchart`
+
+This method generates a bar chart for comparing energy generation within local areas or regions. It allows for comparison of energy generation data specific to certain regions.
+
+- **Parameters:**
+  - `id`: ID of the HTML element where the chart will be rendered.
+  - `df_gen`: DataFrame containing energy generation data.
+  - `lads`: List of local areas or regions.
+  - `year`: Year of interest for cost comparison.
+  - `naming`: Dictionary for renaming data categories.
+  - `x_label` (optional): Label for the x-axis.
+  - `y_label` (optional): Label for the y-axis.
+  - `scenarios` (optional): List of scenarios to include in the comparison.
+  - `colormap` (optional): Color map for distinguishing different technologies.
+  - `title` (optional): Title of the chart.
+
+### `GenericLinechart`
+
+This method generates a generic line chart, which can be customized to plot various types of data over time or other continuous variables.
+
+- **Parameters:**
+  - `id`: ID of the HTML element where the chart will be rendered.
+  - `df`: DataFrame containing the data.
+  - `x`: Column name for the x-axis.
+  - `y`: Column name for the y-axis.
+  - `category`: Column name for the category (used for color differentiation).
+  - `naming` (optional): Dictionary for renaming data categories.
+  - `title` (optional): Title of the chart.
+  - `x_label` (optional): Label for the x-axis.
+  - `y_label` (optional): Label for the y-axis.
+  - `l_label` (optional): Label for the legend.
+  - `y_range` (optional): Range for the y-axis.
+  - `scenarios` (optional): List of scenarios to include in the comparison.
+  - `lads` (optional): List of local areas or regions.
