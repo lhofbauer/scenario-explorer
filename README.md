@@ -1,8 +1,6 @@
-# **INTRODUCTION**
+# **Introduction**
 
 ## The following classes are reusable components
-
-# Chart Class
 
 ## `Chart` Class
 
@@ -107,10 +105,6 @@ This method generates a generic line chart, which can be customized to plot vari
   - `scenarios` (optional): List of scenarios to include in the comparison.
   - `lads` (optional): List of local areas or regions.
 
-# Map Class
-
-This markdown file provides a detailed overview of the `Map` class and its static methods, which are used for generating various types of maps using Plotly and Dash components.
-
 ## `Map` Class
 
 The `Map` class serves as a utility for creating different types of maps commonly used in geographic data visualization tasks. It contains several static methods, each tailored for specific map types and data formats.
@@ -148,10 +142,6 @@ This method generates a hexagonal map visualization using long-form data from a 
   - `x_label` (optional): Label for the x-axis.
   - `y_label` (optional): Label for the y-axis.
 
-# FigureGrid Class
-
-This markdown file provides a detailed overview of the `FigureGrid` class and its static method, which is used for creating a grid layout of figures using Dash Bootstrap Components.
-
 ## `FigureGrid` Class
 
 The `FigureGrid` class facilitates the creation of a grid layout containing multiple figures. It offers a static method `create` for generating the grid layout based on the specified figures and layout configuration.
@@ -172,10 +162,6 @@ This method generates a grid layout of figures based on the provided list of fig
     - `facet`: Facet for the figure, if applicable.
     - `graph`: Graph component (e.g., `dcc.Graph`) representing the figure.
   - `columns_per_row`: A string specifying the number of columns per row in the grid layout.
-
-# Filter Class
-
-This markdown file presents detailed explanations of the `Filter` class and its static methods, which are used for creating filter components in Dash applications.
 
 ## `Filter` Class
 
