@@ -1,8 +1,8 @@
 # **INTRODUCTION**
 
-# Chart Class and Static Methods
+## The following classes are reusable components
 
-This markdown file provides a detailed overview of the `Chart` class and its static methods, which are used for generating various types of charts using Plotly and Dash components.
+# Chart Class
 
 ## `Chart` Class
 
@@ -107,7 +107,7 @@ This method generates a generic line chart, which can be customized to plot vari
   - `scenarios` (optional): List of scenarios to include in the comparison.
   - `lads` (optional): List of local areas or regions.
 
-# Map Class and Static Methods
+# Map Class
 
 This markdown file provides a detailed overview of the `Map` class and its static methods, which are used for generating various types of maps using Plotly and Dash components.
 
@@ -148,7 +148,7 @@ This method generates a hexagonal map visualization using long-form data from a 
   - `x_label` (optional): Label for the x-axis.
   - `y_label` (optional): Label for the y-axis.
 
-# FigureGrid Class and Static Method
+# FigureGrid Class
 
 This markdown file provides a detailed overview of the `FigureGrid` class and its static method, which is used for creating a grid layout of figures using Dash Bootstrap Components.
 
@@ -172,3 +172,40 @@ This method generates a grid layout of figures based on the provided list of fig
     - `facet`: Facet for the figure, if applicable.
     - `graph`: Graph component (e.g., `dcc.Graph`) representing the figure.
   - `columns_per_row`: A string specifying the number of columns per row in the grid layout.
+
+# Filter Class
+
+This markdown file presents detailed explanations of the `Filter` class and its static methods, which are used for creating filter components in Dash applications.
+
+## `Filter` Class
+
+The `Filter` class provides static methods for generating various filter components such as dropdowns and sliders.
+
+## Static Methods
+
+### `Dropdown`
+
+This method creates a dropdown filter component with customizable options.
+
+- **Parameters:**
+  - `options`: A list of dictionaries, where each dictionary contains the label and value for a dropdown option.
+  - `id`: ID of the dropdown component.
+  - `default_option`: Default selected option for the dropdown (optional).
+  - `clearable`: Boolean indicating whether the dropdown allows clearing the selection (default is `False`).
+  - `className`: CSS class for styling the dropdown component (optional).
+  - `multiple`: Boolean indicating whether the dropdown allows multiple selections (default is `False`).
+  - `placeholder`: Placeholder text displayed when no option is selected (optional).
+  - `option_style`: CSS styles applied to the dropdown options (default styles provided).
+
+### `YearSlider`
+
+This method creates a slider filter component specifically for selecting years.
+
+- **Parameters:**
+  - `min`: Minimum value of the slider (start year).
+  - `max`: Maximum value of the slider (end year).
+  - `step`: Interval between slider values.
+  - `id`: ID of the slider component.
+  - `default_value`: Default selected value for the slider (optional).
+  - `tooltip`: Tooltip text displayed when hovering over the slider (optional).
+  - `className`: CSS class for styling the slider component (optional).
