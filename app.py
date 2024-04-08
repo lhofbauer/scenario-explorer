@@ -113,7 +113,8 @@ def update_scenario_list(count, scens, ch_scens, nz, hp, dh, h2, lp, name):
 
     newscen = f'nz-{nz}_hp-{hp:02d}_dh-{dh:02d}_lp-{lp:02d}_h2-{h2:02d}_UK|LA|SO'
     chosen_scens = list()
-    if  newscen not in exscen:    
+    scenario_names = [i['label']['props']['children'] for i in scens]
+    if  (newscen not in exscen) and (name not in scenario_names):    
         response = 'Scenario added to list.'
         scens.append({'label': html.Span(children=name,
                                          style={'color': '#808080',
@@ -128,6 +129,9 @@ def update_scenario_list(count, scens, ch_scens, nz, hp, dh, h2, lp, name):
     
     elif newscen in exscen and count > 0:
         response = 'Scenario already exists.' 
+    
+    elif name in scenario_names and count>0:
+        response = 'Name already exists.' 
         
     return scens, chosen_scens, response, response
 

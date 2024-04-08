@@ -193,7 +193,7 @@ input::placeholder {
   height: 20px;
   font-size: 14px;
   color: #66c2a5;
-  margin-left: 20px;
+  margin-left: 0px;
   display: flex;
 }
 
