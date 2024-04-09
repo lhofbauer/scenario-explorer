@@ -1,10 +1,10 @@
-# **Energy Transition Scenario Explorer**
+## **Energy Transition Scenario Explorer**
 
-## Overview:
+### Overview:
 
 The Energy Transition Scenario Explorer is a web-based tool designed to facilitate the selection and customization of energy transition scenarios. Users can choose from predefined scenarios or create custom scenarios by adjusting various levers that represent different aspects of the energy transition. The application provides visualizations and charts based on the selected scenarios, allowing users to analyze and compare different transition pathways.
 
-## Key Features:
+### Key Features:
 
 1. **Scenario Selection:**
 
@@ -25,7 +25,7 @@ The Energy Transition Scenario Explorer is a web-based tool designed to facilita
    - The application features an intuitive user interface with dropdowns, sliders, and input fields for easy scenario selection and customization.
    - Tooltips provide additional information and guidance to users, helping them make informed decisions when adjusting lever settings.
 
-## Use Cases:
+### Use Cases:
 
 1. **Policy Planning:**
 
@@ -41,9 +41,9 @@ The Energy Transition Scenario Explorer is a web-based tool designed to facilita
    - Educators and outreach professionals can use the application as a teaching tool to illustrate complex concepts related to energy transition and sustainability.
    - Interactive visualizations and scenario simulations engage learners and facilitate discussions on topics such as renewable energy integration, carbon pricing, and energy efficiency measures.
 
-# **User Guide**
+## **User Guide**
 
-# Using the Sidebar for Energy Transition Scenario Selection
+## Using the Sidebar for Energy Transition Scenario Selection
 
 The sidebar allows users to set an energy transition scenario and generate charts based on their selections. Here's a step-by-step guide on how to use the sidebar:
 
@@ -74,17 +74,17 @@ The sidebar allows users to set an energy transition scenario and generate chart
 5. **Scenario Display:**
    - After selecting or creating a scenario and adjusting the lever settings, users can generate charts or visualizations based on their scenario selections.
 
-# **Developer Guide**
+## **Developer Guide**
 
-## The following classes are reusable components
+### The following classes are reusable components
 
-## `Chart` Class
+### `Chart` Class
 
 The `Chart` class serves as a utility for creating different types of charts commonly used in data visualization tasks. It contains several static methods, each tailored for specific chart types and data formats.
 
-## Static Methods
+### Static Methods
 
-### `LongFormBarchart`
+`LongFormBarchart`
 
 This method generates a bar chart using long-form data, which is typically stored in a CSV file. It allows for easy comparison of data across different categories.
 
@@ -100,7 +100,7 @@ This method generates a bar chart using long-form data, which is typically store
   - `sex` (optional): Sex label for the legend.
   - `title` (optional): Title of the chart.
 
-### `ScenCompInvBarchart`
+`ScenCompInvBarchart`
 
 This method generates a bar chart for comparing scenarios, focusing on investment-related data. It aggregates and visualizes investment data across different scenarios.
 
@@ -115,7 +115,7 @@ This method generates a bar chart for comparing scenarios, focusing on investmen
   - `scenarios` (optional): List of scenarios to include in the comparison.
   - `lads` (optional): List of local areas or regions.
 
-### `ScenCompCostBarchart`
+`ScenCompCostBarchart`
 
 This method generates a bar chart for comparing scenarios based on costs. It visualizes cost-related data across different scenarios and years.
 
@@ -130,7 +130,7 @@ This method generates a bar chart for comparing scenarios based on costs. It vis
   - `y_label` (optional): Label for the y-axis.
   - `z_label` (optional): Label for the z-axis.
 
-### `ScenCompGenBarchart`
+`ScenCompGenBarchart`
 
 This method generates a bar chart for comparing scenarios based on energy generation. It visualizes energy generation data across different scenarios.
 
@@ -146,7 +146,7 @@ This method generates a bar chart for comparing scenarios based on energy genera
   - `colormap` (optional): Color map for distinguishing different technologies.
   - `title` (optional): Title of the chart.
 
-### `ScenLocalCompGenBarchart`
+`ScenLocalCompGenBarchart`
 
 This method generates a bar chart for comparing energy generation within local areas or regions. It allows for comparison of energy generation data specific to certain regions.
 
@@ -162,7 +162,7 @@ This method generates a bar chart for comparing energy generation within local a
   - `colormap` (optional): Color map for distinguishing different technologies.
   - `title` (optional): Title of the chart.
 
-### `GenericLinechart`
+`GenericLinechart`
 
 This method generates a generic line chart, which can be customized to plot various types of data over time or other continuous variables.
 
@@ -181,13 +181,13 @@ This method generates a generic line chart, which can be customized to plot vari
   - `scenarios` (optional): List of scenarios to include in the comparison.
   - `lads` (optional): List of local areas or regions.
 
-## `Map` Class
+### `Map` Class
 
 The `Map` class serves as a utility for creating different types of maps commonly used in geographic data visualization tasks. It contains several static methods, each tailored for specific map types and data formats.
 
-## Static Methods
+### Static Methods
 
-### `GenericHexmap`
+`GenericHexmap`
 
 This method generates a hexagonal map visualization using data from a DataFrame. It allows for comparison of values across different scenarios and technologies.
 
@@ -204,7 +204,7 @@ This method generates a hexagonal map visualization using data from a DataFrame.
   - `figonly` (optional): Flag to return only the Plotly figure.
   - `textangle` (optional): Angle for the text displayed on the map.
 
-### `LongFormHexmap`
+`LongFormHexmap`
 
 This method generates a hexagonal map visualization using long-form data from a CSV file. It allows for easy visualization of data across different regions.
 
@@ -218,13 +218,13 @@ This method generates a hexagonal map visualization using long-form data from a 
   - `x_label` (optional): Label for the x-axis.
   - `y_label` (optional): Label for the y-axis.
 
-## `FigureGrid` Class
+### `FigureGrid` Class
 
 The `FigureGrid` class facilitates the creation of a grid layout containing multiple figures. It offers a static method `create` for generating the grid layout based on the specified figures and layout configuration.
 
-## Static Method
+### Static Method
 
-### `create`
+`create`
 
 This method generates a grid layout of figures based on the provided list of figures and the desired number of columns per row.
 
@@ -239,13 +239,13 @@ This method generates a grid layout of figures based on the provided list of fig
     - `graph`: Graph component (e.g., `dcc.Graph`) representing the figure.
   - `columns_per_row`: A string specifying the number of columns per row in the grid layout.
 
-## `Filter` Class
+### `Filter` Class
 
 The `Filter` class provides static methods for generating various filter components such as dropdowns and sliders.
 
-## Static Methods
+### Static Methods
 
-### `Dropdown`
+`Dropdown`
 
 This method creates a dropdown filter component with customizable options.
 
@@ -259,7 +259,7 @@ This method creates a dropdown filter component with customizable options.
   - `placeholder`: Placeholder text displayed when no option is selected (optional).
   - `option_style`: CSS styles applied to the dropdown options (default styles provided).
 
-### `YearSlider`
+`YearSlider`
 
 This method creates a slider filter component specifically for selecting years.
 
