@@ -43,7 +43,7 @@ The Energy Transition Scenario Explorer is a web-based tool designed to facilita
 
 ## **User Guide**
 
-## Using the Sidebar for Energy Transition Scenario Selection
+### Using the Sidebar for Energy Transition Scenario Selection
 
 The sidebar allows users to set an energy transition scenario and generate charts based on their selections. Here's a step-by-step guide on how to use the sidebar:
 
