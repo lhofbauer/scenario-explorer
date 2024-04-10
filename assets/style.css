@@ -125,7 +125,7 @@ input::placeholder {
 }
   
 /* Buttons */
-#submit_button {
+#submit_button, #close_modal {
     background-color: #fff;
     width: 10rem;
     height:2.2rem;
@@ -138,12 +138,12 @@ input::placeholder {
     margin-bottom: 5px;
 }
   
-#submit_button:hover {
+#submit_button:hover, #close_modal:hover {
     background-color: #66c2a5;
     color: white
     }
 
-#submit_button:active {
+#submit_button:active, #close_modal:active {
     background-color: #91c9b7;
 }
 
@@ -458,3 +458,17 @@ input::placeholder {
     padding-left: 1rem;
 }
 
+
+/* Modal */
+.modal-content {
+    border-radius: 15px;
+}
+
+#modal_title {
+    font-weight: bold;
+    font-family: Roboto, Arial, sans-serif;
+    color: #66c2a5;
+    text-align: left;
+    font-size: 20px;
+    font-weight: 700;
+}

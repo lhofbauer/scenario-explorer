@@ -13,7 +13,8 @@ appdir = str(Path(__file__).parent.parent.resolve())
 # COMPONENT
 # - DEFINE FILTER FOR REGIONS
 # -- Define the areas and fetch the name
-areasfile = f'{appdir}/data/areas_codes_names.json'
+# -- The following function is no longer used
+"""areasfile = f'{appdir}/data/areas_codes_names.json'
 with open(areasfile, 'r', encoding = 'utf-8') as json_file:
     data = json.load(json_file)
 
@@ -27,7 +28,7 @@ area_dropdown =  html.Div([
 
 # -- Pack the dropdown area
 dropdown_component = html.Div(area_dropdown, id = 'dropdown_component')
-
+"""
 
 # - SUBTABS
 # -- Subtabs for tab-1
@@ -63,6 +64,7 @@ with open(local_auth_path, "r", encoding="utf-8") as json_file:
 
 # --- Options for the dropdown
 local_auth_options = list(local_authority_data['name_code'].keys())
+local_auth_options = sorted(local_auth_options)
 
 button =  dbc.Button(
             "Select Local Authorities",
@@ -143,7 +145,6 @@ def tabs(figures : list):
             id="tabs",
             value="tab-1",
         ),
-        #html.Div(area_dropdown, id = 'dropdown_component'),
         html.Div(figures, id = "figure-area"),
     ], 
     id = 'tab_area'

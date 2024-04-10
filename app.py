@@ -1,5 +1,5 @@
 from dash import Dash, html, dcc, callback, Output, Input, State, no_update
-from component import Sidebar, Tabs
+from component import Sidebar, Tabs, Modal
 from component.Filter import *
 from component.Chart import *
 from component.Map import *
@@ -26,6 +26,7 @@ app = Dash(__name__,
 
 # DEFINE LAYOUT
 app.layout = html.Div([
+                Modal.Modal(),
                 html.Div([Navigation.HeadBar(),
                        Sidebar.sidebar(),
                        Tabs.tabs([]),
@@ -54,6 +55,19 @@ heatcost_options_type = [
                  'value':'heat'}]
 
 # DEFINE CALLBACKS
+# Close the tutorial
+@callback(
+    Output("tutorial_modal", "is_open"),
+    [
+        Input("close_modal", "n_clicks"),
+    ],
+    [State("tutorial_modal", "is_open")],
+)
+def modal(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
 @callback(
     Output('nz_slider', 'value'), 
     Output('hp_slider','value'),
