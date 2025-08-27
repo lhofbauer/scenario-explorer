@@ -644,11 +644,31 @@ def update_graphs(scenarios, tab, subtab_1, subtab_2, lads, scen_options):
 
         
     elif tab == 'tab-3':
-       
+        # filename="content/privacy_notice.txt"
+        # with open("content/privacy_notice.txt","r") as f:
+        #    string = f.read()
+        # text_markdown = "\t"
+        # with open("content/privacy_notice.txt") as this_file:
+        #     for a in this_file.read():
+        #         if "\n" in a:
+        #             text_markdown += "\n \t"
+        #         else:
+        #             text_markdown += a
+        # with open(filename) as file:
+        #     lines = [line.rstrip() for line in file]
+        # l = [[l, html.Br()] for l in lines]
+        # fl = [ e for ee in l for e in ee]
+                                          
+                                            
         glist = [html.Div([content['help_information'][0],
                             content['help_information'][1],
                             html.Br(), html.Br(),
-                            content['help_information'][2]])]
+                            content['help_information'][2],
+                            html.Br(), html.Br(),
+                            html.Iframe(
+            src="assets/privacy_notice.html",
+            style={"height": "1867px", "width": "100%"},
+        )])]
 
 
     return dbc.Container(glist,

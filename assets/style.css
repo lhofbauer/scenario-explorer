@@ -20,6 +20,11 @@ body {
     font-size: 12px;
     font-weight: 500;
 }
+.warning {
+    color: #780606;
+    font-size: 18px;
+    font-weight: 700;
+}
     
 /* Navbar */
 #navbar {
